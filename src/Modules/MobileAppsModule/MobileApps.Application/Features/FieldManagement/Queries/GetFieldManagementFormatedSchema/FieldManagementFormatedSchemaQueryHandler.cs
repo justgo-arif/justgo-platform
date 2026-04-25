@@ -1,0 +1,311 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Schema;
+using Dapper;
+using JustGo.Authentication.Helper;
+using JustGo.Authentication.Services.Interfaces.Persistence.Repositories.GenericRepositories;
+using JustGoAPI.Shared.Helper;
+using JustGo.Authentication.Services.Interfaces.CustomMediator;
+using MobileApps.Domain.Entities.V2.FieldManagement;
+using Newtonsoft.Json;
+
+namespace MobileApps.Application.Features.FieldManagement.Queries.GetFieldManagementSchema
+{
+    class FieldManagementFormatedSchemaQueryHandler : IRequestHandler<FieldManagementFormatedSchemaQuery, List<object>>
+    {
+        private readonly LazyService<IReadRepository<object>> _readRepository;
+        private IMediator _mediator;
+        public FieldManagementFormatedSchemaQueryHandler(LazyService<IReadRepository<object>> readRepository, IMediator mediator)
+        {
+            _readRepository = readRepository;
+            _mediator = mediator;
+        }
+
+        public async Task<List<object>> Handle(FieldManagementFormatedSchemaQuery request, CancellationToken cancellationToken)
+        {
+            string sqlSchema = "";
+            var entityTypeId = request.EntityType.ToLower() == "ngb" ? 0 : 1;
+            if (entityTypeId>0)
+                sqlSchema = GetClubSchemaQuery();
+            else sqlSchema = GetNgbSchemaQuery();
+
+            var param = new { ExId = request.ExId, ItemId=request.ItemId };
+
+            var parents = await _readRepository.Value.GetListAsync(sqlSchema, param, null, "text");
+
+            if (!parents.Any())
+            {
+                return new List<object>();
+            }
+            var data = JsonConvert.DeserializeObject<List<ParentClass>>(JsonConvert.SerializeObject(parents));
+            
+            return await GetFieldSetsAndFieldsAsync(data, request.ExId, entityTypeId);
+
+        }
+
+        private string GetNgbSchemaQuery()
+        {
+            return @"SELECT COALESCE(JSON_VALUE(Config, '$.tabName'), '') AS FormName,ItemId,SyncGuid,*  FROM EntityExtensionUI WHERE EXID=@ExId AND ItemId=@ItemId AND Class='MA_TabItem';";
+        }
+        private string GetClubSchemaQuery()
+        {
+            return @"SELECT COALESCE(JSON_VALUE(Config, '$.tabName'), '') AS FormName,ItemId,SyncGuid,*  FROM EntityExtensionUI WHERE EXID=@ExId AND ItemId=@ItemId AND Class='MA_TabItem' AND (JSON_VALUE(Config, '$.security') IS NULL OR JSON_VALUE(Config, '$.security') NOT LIKE '%hideFromClubs%');";
+        }
+
+        private async Task<List<object>> GetFieldSetsAndFieldsAsync(IEnumerable<ParentClass> parents, int exId,int entityId)
+        {
+            try
+            {
+                var parentIds = parents.Select(p => p.ItemId).ToList();
+
+                // Get Children for All Parents
+                string sqlChild = "";
+                if (entityId > 0) sqlChild = GetClubFieldSetsAndFieldsQuery();
+                else sqlChild = GetNgbFieldSetsAndFieldsQuery();
+
+                var paramChild = new { ParentIds = parentIds, ExId = exId };
+                var children = await _readRepository.Value.GetListAsync(sqlChild, paramChild, null, "text");
+
+                string jsonChildData = JsonConvert.SerializeObject(children);
+                var childrenData=JsonConvert.DeserializeObject<List<ChildItem>>(jsonChildData);
+                //uncomment id grid item is need to show)
+                var childGrid = GetGridFieldSetsAndFieldsAsync(parentIds, exId, entityId);
+                if (childGrid.Result!=null && childGrid.Result.Any())
+                {
+                    var mergedReadOnlyList = childrenData.Concat(childGrid.Result).ToList();
+                    childrenData = mergedReadOnlyList;
+                }
+                // Get Child Values for All Children
+                var fieldIds = childrenData.ToList().Where(c => c.FieldId != -1).Select(c => c.FieldId).ToList();
+
+                string sqlChildValue = @"SELECT FieldId,[Key], Caption as [Value]
+                        FROM EntityExtensionFieldValues 
+                        WHERE FieldId IN @FieldIds 
+                        ORDER BY FieldValueId ASC;";
+
+                var paramChildValue = new { FieldIds = fieldIds };
+                var childValues = await _readRepository.Value.GetListAsync(sqlChildValue, paramChildValue, null, "text");
+
+                var jsonData = JsonConvert.SerializeObject(childValues);
+                var childValuesData = JsonConvert.DeserializeObject<List<ChildValue>>(jsonData);
+                // Build Hierarchy
+                var childLookup = childrenData.ToList().ToLookup(c => c.ParentId);
+                var valueLookup = childValuesData.ToLookup(v => v.FieldId);
+
+                var result = new List<object>();
+
+
+                foreach (var parent in parents)
+                {
+                    // Create the parent (form) structure
+                    var form = new Dictionary<string, object> { { "formName", parent.FormName }, { "formGuid", parent.SyncGuid } };
+
+                    // Loop through each child field for this parent (form) and directly add fields without "fields": {}
+                    foreach (var child in childLookup[parent.ItemId])
+                    {
+                        if (child.FieldId == -1) continue;
+
+                        // Build the field structure for each field
+                        var field = new Dictionary<string, object>
+                        {
+                            { "isMultiSelect", child.IsMultiSelect }
+                            ,{ "isRequired", child.IsRequired }
+                            ,{"type",string.IsNullOrEmpty(child.Type)?child.Class: child.Type}
+                            ,{"fieldId",child.FieldId}
+                        };
+                        if (valueLookup.Contains(child.FieldId))
+                        {
+                            child.Values = valueLookup[child.FieldId].ToList(); // Convert IGrouping<int, ChildValue> to List<ChildValue>
+                        }
+
+                        if (child.Values.Count > 0)
+                        {
+                            //this section is designed for Event due to duplicate key for same value
+                            var modelOutDic = new Dictionary<string, object>();
+                            foreach (var item in child.Values)
+                            {
+                                string fieldKey = item.Key;
+                                var fieldValue = item.Value;
+
+                                // Check if the fieldName already exists in the dictionary
+                                if (modelOutDic.ContainsKey(fieldKey))
+                                {
+                                    // If the key exists, we store the value in a list (handle multiple values)
+                                    var values = modelOutDic[fieldKey] as List<object>;
+                                    if (values == null)
+                                    {
+                                        values = new List<object> { modelOutDic[fieldKey] };
+                                        modelOutDic[fieldKey] = values;
+                                    }
+                                    values.Add(fieldValue);
+                                }
+                                else
+                                {
+                                    // If the key does not exist, add the field with the value
+                                    modelOutDic[fieldKey] = fieldValue;
+                                }
+                            }
+
+                            field["value"] = modelOutDic;
+                        }
+
+
+                        // Add the field directly to the form instead of a nested "fields" object
+                        form[child.FieldName] = field;
+                    }
+
+                    // Add the form to the result list
+                    result.Add(form);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                // Log or handle exception
+                throw new Exception($"Error loading field sets and fields: {ex.Message}");
+            }
+        }
+        private async Task<List<ChildItem>> GetGridFieldSetsAndFieldsAsync(List<int> parentIds, int exId, int entityId)
+        {
+            try
+            {
+                string sqlChildGrid = @"";
+                if (entityId > 0) sqlChildGrid = GetClubGridFieldSetsAndFieldsSql();
+                else sqlChildGrid = GetNgbGridFieldSetsAndFieldsSql();
+
+                var paramChild = new { ParentIds = parentIds, ExId = exId };
+
+                var childGrid=await _readRepository.Value.GetAsync(sqlChildGrid, paramChild, null, "text");
+                string jsonString = JsonConvert.SerializeObject(childGrid);
+                return JsonConvert.DeserializeObject<List<ChildItem>>(jsonString);
+
+            }
+            catch (Exception ex)
+            {
+                // Log or handle exception
+                throw new Exception($"Error loading grid field sets and fields: {ex.Message}");
+            }
+        }
+       
+        private string GetNgbFieldSetsAndFieldsQuery()
+        {
+            return @"SELECT 
+                    COALESCE(JSON_VALUE(ui.Config, '$.label'), '') AS FieldName, 
+                    COALESCE(NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].type'), ''), JSON_VALUE(ui.Config, '$.type'), '') AS [Type], 
+                    COALESCE(JSON_VALUE(ui.Config, '$.isRequired'), 'false') AS IsRequired,ui.Config,
+                    CASE 
+                    WHEN ui.Class = 'MA_CheckboxGroup' 
+                    AND COALESCE(NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].type'), ''), JSON_VALUE(ui.Config, '$.type'), '') <> 'radio' 
+                    THEN 'true' 
+                    ELSE COALESCE(
+                    NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].isMultiSelect'), ''), 
+                    NULLIF(JSON_VALUE(ui.Config, '$.isMultiSelect'), ''), 
+                    'false'
+                    ) 
+                    END AS isMultiSelect,  
+                    ui.FieldId, 
+                    ui.ParentId,
+                    f.DataType,
+                    f.FieldSetId,
+                    CASE
+                        WHEN ui.Class LIKE 'MA_%Field' 
+                            THEN SUBSTRING(ui.Class, 4, LEN(ui.Class) - 8)  -- Remove 'MA_' (3 chars) and 'Field' (5 chars)
+                        WHEN ui.Class LIKE 'MA_%' 
+                            THEN SUBSTRING(ui.Class, 4, LEN(ui.Class) - 3)  -- Remove 'MA_' (3 chars)
+                        ELSE ui.Class
+                    END AS Class
+
+                    FROM EntityExtensionUI ui
+                    left join EntityExtensionField f on ui.FieldId=f.Id
+                    WHERE ui.EXID=@ExId 
+                    AND ui.ParentId IN @ParentIds;";
+        }
+        private string GetClubFieldSetsAndFieldsQuery()
+        {
+            return @"SELECT 
+                    COALESCE(JSON_VALUE(ui.Config, '$.label'), '') AS FieldName, 
+                    COALESCE(NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].type'), ''), JSON_VALUE(ui.Config, '$.type'), '') AS [Type], 
+                    COALESCE(JSON_VALUE(ui.Config, '$.isRequired'), 'false') AS IsRequired,ui.Config,
+                    CASE 
+                    WHEN ui.Class = 'MA_CheckboxGroup' 
+                    AND COALESCE(NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].type'), ''), JSON_VALUE(ui.Config, '$.type'), '') <> 'radio' 
+                    THEN 'true' 
+                    ELSE COALESCE(
+                    NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].isMultiSelect'), ''), 
+                    NULLIF(JSON_VALUE(ui.Config, '$.isMultiSelect'), ''), 
+                    'false'
+                    ) 
+                    END AS isMultiSelect,  
+                    ui.FieldId, 
+                    ui.ParentId,
+                    f.DataType,
+                    f.FieldSetId,
+                    CASE
+                        WHEN ui.Class LIKE 'MA_%Field' 
+                            THEN SUBSTRING(ui.Class, 4, LEN(ui.Class) - 8)  -- Remove 'MA_' (3 chars) and 'Field' (5 chars)
+                        WHEN ui.Class LIKE 'MA_%' 
+                            THEN SUBSTRING(ui.Class, 4, LEN(ui.Class) - 3)  -- Remove 'MA_' (3 chars)
+                        ELSE ui.Class
+                    END AS Class
+
+                    FROM EntityExtensionUI ui
+                    left join EntityExtensionField f on ui.FieldId=f.Id
+                    WHERE ui.EXID=@ExId 
+                    AND ui.ParentId IN @ParentIds
+                    AND (JSON_VALUE(ui.Config, '$.fieldSec_clubsCanView') IS NULL OR JSON_VALUE(ui.Config, '$.fieldSec_clubsCanView')<> 'false');";
+        }
+        private string GetNgbGridFieldSetsAndFieldsSql()
+        {
+            return @"SELECT f.Name AS FieldName, 
+                    COALESCE(NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].type'), ''), JSON_VALUE(ui.Config, '$.type'), '') AS [Type],
+                    COALESCE(JSON_VALUE(ui.Config, '$.isRequired'), 'false') AS IsRequired,ui.Config,
+                    CASE 
+                    WHEN ui.Class = 'MA_CheckboxGroup' 
+                    AND COALESCE(NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].type'), ''), JSON_VALUE(ui.Config, '$.type'), '') <> 'radio' 
+                    THEN 'true' 
+                    ELSE COALESCE(
+                    NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].isMultiSelect'), ''), 
+                    NULLIF(JSON_VALUE(ui.Config, '$.isMultiSelect'), ''), 'false') 
+                    END AS isMultiSelect,  
+                    f.id as FieldId, 
+                    ui.ParentId,
+                    f.DataType,
+                    f.FieldSetId
+                    FROM EntityExtensionUI ui
+                    left join EntityExtensionFieldSet fs on JSON_VALUE(REPLACE(ui.Config, '$fs', 'fs'), '$.fs.name')=fs.[Name]
+                    left join EntityExtensionField f on fs.Id=f.FieldSetId
+                    WHERE ui.ExId=@ExId and ui.ParentId in @ParentIds
+                    and Class='MA_Grid';";
+        }
+        private string GetClubGridFieldSetsAndFieldsSql()
+        {
+            return @"SELECT f.Name AS FieldName, 
+                    COALESCE(NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].type'), ''), JSON_VALUE(ui.Config, '$.type'), '') AS [Type],
+                    COALESCE(JSON_VALUE(ui.Config, '$.isRequired'), 'false') AS IsRequired,ui.Config,
+                    CASE 
+                    WHEN ui.Class = 'MA_CheckboxGroup' 
+                    AND COALESCE(NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].type'), ''), JSON_VALUE(ui.Config, '$.type'), '') <> 'radio' 
+                    THEN 'true' 
+                    ELSE COALESCE(
+                    NULLIF(JSON_VALUE(ui.Config, '$.rules.visible.rules[0].isMultiSelect'), ''), 
+                    NULLIF(JSON_VALUE(ui.Config, '$.isMultiSelect'), ''), 'false') 
+                    END AS isMultiSelect,  
+                    f.id as FieldId, 
+                    ui.ParentId,
+                    f.DataType,
+                    f.FieldSetId
+                    FROM EntityExtensionUI ui
+                    left join EntityExtensionFieldSet fs on JSON_VALUE(REPLACE(ui.Config, '$fs', 'fs'), '$.fs.name')=fs.[Name]
+                    left join EntityExtensionField f on fs.Id=f.FieldSetId
+                    WHERE ui.ExId=@ExId and ui.ParentId in @ParentIds
+                    and Class='MA_Grid'
+                    AND (JSON_VALUE(ui.Config, '$.security') IS NULL 
+                    OR JSON_VALUE(ui.Config, '$.security') NOT LIKE '%hideFromClubs%');";
+        }
+    }
+}

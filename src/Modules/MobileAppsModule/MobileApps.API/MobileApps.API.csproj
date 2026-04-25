@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Controllers\V2\ClassesController.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\JustGoAPI.Shared\JustGoAPI.Shared.csproj" />
+    <ProjectReference Include="..\..\AuthModule\AuthModule.Application\AuthModule.Application.csproj" />
+    <ProjectReference Include="..\MobileApps.Application\MobileApps.Application.csproj" />
+    <ProjectReference Include="..\MobileApps.Infrastructure\MobileApps.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\Memberships\Commands\" />
+    <Folder Include="Interfaces\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\JustGo.Authentication\JustGo.Authentication.csproj" />
+	<ProjectReference Include="..\..\AuthModule\AuthModule.Application\AuthModule.Application.csproj" />
+    <ProjectReference Include="..\JustGo.Membership.Domain\JustGo.Membership.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

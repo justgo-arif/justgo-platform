@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Behaviors\**" />
+    <Compile Remove="DTOs\**" />
+    <Compile Remove="Exceptions\**" />
+    <Compile Remove="Features\Club\Commands\**" />
+    <Compile Remove="Features\Members\V2\NewFolder\**" />
+    <Compile Remove="Interfaces\**" />
+    <EmbeddedResource Remove="Behaviors\**" />
+    <EmbeddedResource Remove="DTOs\**" />
+    <EmbeddedResource Remove="Exceptions\**" />
+    <EmbeddedResource Remove="Features\Club\Commands\**" />
+    <EmbeddedResource Remove="Features\Members\V2\NewFolder\**" />
+    <EmbeddedResource Remove="Interfaces\**" />
+    <None Remove="Behaviors\**" />
+    <None Remove="DTOs\**" />
+    <None Remove="Exceptions\**" />
+    <None Remove="Features\Club\Commands\**" />
+    <None Remove="Features\Members\V2\NewFolder\**" />
+    <None Remove="Interfaces\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Features\Class\V3.zip" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+    <PackageReference Include="MimeKit" Version="4.10.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\JustGo.Authentication\JustGo.Authentication.csproj" />
+    <ProjectReference Include="..\..\..\JustGoAPI.Shared\JustGoAPI.Shared.csproj" />
+    <ProjectReference Include="..\..\AuthModule\AuthModule.Domain\AuthModule.Domain.csproj" />
+    <ProjectReference Include="..\MobileApps.Domain\MobileApps.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\Members\Commands\" />
+    <Folder Include="Features\Members\V2\Queries\" />
+  </ItemGroup>
+
+</Project>

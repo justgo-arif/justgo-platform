@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Features\Lookup\Commands\**" />
+    <EmbeddedResource Remove="Features\Lookup\Commands\**" />
+    <None Remove="Features\Lookup\Commands\**" />
+  </ItemGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\JustGo.Authentication\JustGo.Authentication.csproj" />
+    <ProjectReference Include="..\..\..\JustGoAPI.Shared\JustGoAPI.Shared.csproj" />
+    <ProjectReference Include="..\AuthModule.Domain\AuthModule.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Behaviors\" />
+    <Folder Include="Exceptions\" />
+    <Folder Include="Features\ClubMembers\Commands\" />
+    <Folder Include="Features\Groups\Commands\" />
+    <Folder Include="Features\Memberships\Commands\" />
+    <Folder Include="Features\Policies\Commands\" />
+    <Folder Include="Features\Roles\Commands\" />
+    <Folder Include="Interfaces\Infrastructure\" />
+  </ItemGroup>
+
+</Project>

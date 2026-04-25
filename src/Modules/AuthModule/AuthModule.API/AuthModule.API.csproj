@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+	<FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+    <PackageReference Include="Mapster" Version="7.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\JustGoAPI.Shared\JustGoAPI.Shared.csproj" />
+    <ProjectReference Include="..\..\MemberProfileModule\JustGo.MemberProfile.Application\JustGo.MemberProfile.Application.csproj" />
+    <ProjectReference Include="..\AuthModule.Application\AuthModule.Application.csproj" />
+    <ProjectReference Include="..\AuthModule.Infrastructure\AuthModule.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

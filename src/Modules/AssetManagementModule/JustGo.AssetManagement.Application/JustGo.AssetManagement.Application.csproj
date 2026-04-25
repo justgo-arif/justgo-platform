@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Features\AssetRegister\**" />
+    <Compile Remove="Features\Leases\**" />
+    <EmbeddedResource Remove="Features\AssetRegister\**" />
+    <EmbeddedResource Remove="Features\Leases\**" />
+    <None Remove="Features\AssetRegister\**" />
+    <None Remove="Features\Leases\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\AssetTypes\Commands\" />
+    <Folder Include="Interfaces\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="5.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\JustGo.Authentication\JustGo.Authentication.csproj" />
+    <ProjectReference Include="..\..\AuthModule\AuthModule.Application\AuthModule.Application.csproj" />
+    <ProjectReference Include="..\JustGo.AssetManagement.Domain\JustGo.AssetManagement.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

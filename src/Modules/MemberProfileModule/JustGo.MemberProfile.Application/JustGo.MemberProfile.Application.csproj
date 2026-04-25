@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Interfaces\persistence\Repositories\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\JustGo.Authentication\JustGo.Authentication.csproj" />
+    <ProjectReference Include="..\..\AuthModule\AuthModule.Application\AuthModule.Application.csproj" />
+    <ProjectReference Include="..\..\FieldManagementModule\JustGo.FieldManagement.Application\JustGo.FieldManagement.Application.csproj" />
+    <ProjectReference Include="..\JustGo.MemberProfile.Domain\JustGo.MemberProfile.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

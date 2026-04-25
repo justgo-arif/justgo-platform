@@ -1,0 +1,24 @@
+﻿using System.Collections.Generic;
+using AuthModule.Domain.Entities;
+using JustGo.Authentication.Services.Interfaces.CustomMediator;
+
+namespace AuthModule.Application.Features.Tenants.Queries.GetTenants
+{
+    public class GetTenantsQuery : IRequest<List<Tenant>>
+    {
+        public int Id { get; set; }
+        public Guid TenantGuid { get; set; }
+        public string TenantName { get; set; }
+        public string TenantDescription { get; set; }
+        public string ServerName { get; set; }
+        public string DatabaseName { get; set; }
+        public string ServerLocation { get; set; }
+        public string TenantClientId { get; set; }
+        public string ApiUrl { get; set; }
+        public string TenantDomainUrl { get; set; }
+        public string JwtAccessTokenSecretKey { get; set; }
+        public int JwtAccessTokenExpiryMinutes { get; set; }
+        public int JwtRefreshTokenExpiryMinutes { get; set; }
+
+    }
+}

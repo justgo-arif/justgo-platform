@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\JustGoAPI.Shared\JustGoAPI.Shared.csproj" />
+    <ProjectReference Include="..\JustGo.MemberProfile.Application\JustGo.MemberProfile.Application.csproj" />
+    <ProjectReference Include="..\JustGo.MemberProfile.Infrastructure\JustGo.MemberProfile.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,336 @@
+﻿using JustGo.AssetManagement.Application.DTOs.Enums;
+
+namespace JustGo.AssetManagement.Application.Features.FilterHelper
+{
+    public class ColumnNameResolver
+    {
+        public static readonly Dictionary<string, ColumnDefinition> ColumnNameDictionary = new Dictionary<string, ColumnDefinition>()
+        {
+            { "AssetTypeId", new ColumnDefinition ("AssetTypeId",
+                                             "ar.AssetTypeId",
+                                             AssetTables.AssetTypes,
+                                             "AssetRegisters",
+                                             "AssetTypeId",
+                                             FieldType.guid)  },
+            { "AssetRecordGuid", new ColumnDefinition ("AssetRecordGuid",
+                                             "ar.RecordGuid",
+                                             null,
+                                             "AssetRegisters",
+                                             "RecordGuid",
+                                             FieldType.text)  },
+            { "AssetID", new ColumnDefinition ("AssetID",
+                                             "ar.AssetReference", 
+                                             null, 
+                                             "AssetRegisters",
+                                             "AssetReference",
+                                             FieldType.text)  },
+             { "Brand", new ColumnDefinition ("Brand",
+                                             "ar.Brand",
+                                             null,
+                                             "AssetRegisters",
+                                             "Brand",
+                                             FieldType.text)  },
+             { "SerialNo", new ColumnDefinition ("SerialNo",
+                                             "ar.SerialNo",
+                                             null,
+                                             "AssetRegisters",
+                                             "SerialNo",
+                                             FieldType.text)  },
+             { "AssetValue", new ColumnDefinition ("AssetValue",
+                                             "ar.AssetValue",
+                                             null,
+                                             "AssetRegisters",
+                                             "AssetValue",
+                                             FieldType.number)  },
+             { "Barcode", new ColumnDefinition ("Barcode",
+                                             "ar.Barcode",
+                                             null,
+                                             "AssetRegisters",
+                                             "Barcode",
+                                             FieldType.text)  },
+              { "AssetDescription", new ColumnDefinition ("AssetDescription",
+                                             "ar.AssetDescription",
+                                             null,
+                                             "AssetRegisters",
+                                             "AssetDescription",
+                                             FieldType.text)  },
+             { "Address1", new ColumnDefinition ("Address1",
+                                             "ar.Address1",
+                                             null,
+                                             "AssetRegisters",
+                                             "Address1",
+                                             FieldType.text)  },
+             { "Address2", new ColumnDefinition ("Address2",
+                                             "ar.Address2",
+                                             null,
+                                             "AssetRegisters",
+                                             "Address2",
+                                             FieldType.text)  },
+            { "Country", new ColumnDefinition ("Country",
+                                             "ar.Country",
+                                             null,
+                                             "AssetRegisters",
+                                             "Country",
+                                             FieldType.text)  },
+            { "County", new ColumnDefinition ("County",
+                                             "ar.County",
+                                             null,
+                                             "AssetRegisters",
+                                             "County",
+                                             FieldType.text)  },
+            { "Town", new ColumnDefinition ("Town",
+                                             "ar.Town",
+                                             null,
+                                             "AssetRegisters",
+                                             "Town",
+                                             FieldType.text)  },
+           { "PostCode", new ColumnDefinition ("PostCode",
+                                             "ar.PostCode",
+                                             null,
+                                             "AssetRegisters",
+                                             "PostCode",
+                                             FieldType.text)  },
+
+
+            { "Group", new ColumnDefinition ("Group",
+                                             "ar.[Group]",
+                                             null,
+                                             "AssetRegisters",
+                                             "Group",
+                                             FieldType.text)  },
+            { "ManufactureDate", new ColumnDefinition ("ManufactureDate",
+                                             "CAST(ar.ManufactureDate AS DATE)",
+                                             null,
+                                             "AssetRegisters",
+                                             "ManufactureDate",
+                                             FieldType.date)  },
+            { "AssetName", new ColumnDefinition ("AssetName",
+                                             "ar.AssetName",
+                                             null,
+                                             "AssetRegisters",
+                                             "AssetName",
+                                             FieldType.text)  },
+            { "AssetStatus", new ColumnDefinition ("AssetStatus",
+                                             "ast.Name",
+                                             null,
+                                             "AssetStatus",
+                                             "Name",
+                                             FieldType.text)  },
+            { "AssetStatusId", new ColumnDefinition ("AssetStatusId",
+                                             "ast.AssetStatusId",
+                                             AssetTables.AssetStatus,
+                                             "AssetStatus",
+                                             "AssetStatusId",
+                                             FieldType.guid)  },
+
+
+           { "LeaseRecordGuid", new ColumnDefinition ("LeaseRecordGuid",
+                                             "al.RecordGuid",
+                                             null,
+                                             "AssetLeases",
+                                             "RecordGuid",
+                                             FieldType.text)  },
+
+            { "LeaseStatus", new ColumnDefinition ("LeaseStatus",
+                                             "lst.Name",
+                                             null,
+                                             "AssetStatus",
+                                             "Name",
+                                             FieldType.text)  },
+            { "LeaseStatusId", new ColumnDefinition ("LeaseStatusId",
+                                             "al.StatusId",
+                                             AssetTables.AssetStatus,
+                                             "AssetLeases",
+                                             "StatusId",
+                                             FieldType.guid)  },
+            { "LeaseStartDate", new ColumnDefinition ("LeaseStartDate",
+                                             "al.LeaseStartDate",
+                                             null,
+                                             "AssetLeases",
+                                             "LeaseStartDate",
+                                             FieldType.date)  },
+            { "LeaseEndDate", new ColumnDefinition ("LeaseEndDate",
+                                             "al.LeaseEndDate",
+                                             null,
+                                             "AssetLeases",
+                                             "LeaseEndDate",
+                                             FieldType.date)  },
+            { "LeaseIn", new ColumnDefinition ("LeaseIn",
+                                             "(case when aosp.EntityType = 2 then 1 Else 0 end)",
+                                             null,
+                                             "",
+                                             "",
+                                             FieldType.number)  },
+            { "UserName",  new ColumnDefinition ("UserName",
+                                             "Concat(u.FirstName, ' ', u.LastName)",
+                                             null,
+                                             "User",
+                                             "FirstName,LastName",
+                                             FieldType.text)  },
+
+
+            { "Category",  new ColumnDefinition ("Category",
+                                             "ac.Name",
+                                             null,
+                                             "AssetCategories",
+                                             "Name",
+                                             FieldType.text)  },
+            { "CategoryId", new ColumnDefinition ("CategoryId",
+                                             "ac.AssetCategoryId",
+                                             AssetTables.AssetCategories,
+                                             "AssetCategories",
+                                             "AssetCategoryId",
+                                             FieldType.guid)  },
+            { "Tag",  new ColumnDefinition ("Tag",
+                                             "att.Name",
+                                             null,
+                                             "AssetTypesTag",
+                                             "Name",
+                                             FieldType.text)  },
+
+            { "OwnerName",  new ColumnDefinition ("OwnerName",
+                                             "Concat(u.FirstName, ' ', u.LastName)",
+                                             null,
+                                             "User",
+                                             "FirstName,LastName",
+                                             FieldType.text)  },
+
+            { "CounterpartyName",  new ColumnDefinition ("CounterpartyName",
+                                             "Concat(cp.FirstName, ' ', cp.LastName)",
+                                             null,
+                                             "User",
+                                             "FirstName,LastName",
+                                             FieldType.text)  },
+
+
+            { "CounterpartyMemberID",  new ColumnDefinition ("CounterpartyMemberID",
+                                             "cp.MemberId",
+                                             null,
+                                             "User",
+                                             "MemberId",
+                                             FieldType.text)  },
+
+            { "MemberID",  new ColumnDefinition ("MemberID",
+                                             "u.MemberId",
+                                             null,
+                                             "User",
+                                             "MemberId",
+                                             FieldType.text)  },
+
+            { "AssetLicenseId",  new ColumnDefinition ("AssetLicenseId",
+                                             "ali.AssetLicenseId",
+                                             AssetTables.AssetLicenses,
+                                             "AssetLicenses",
+                                             "RecordGuid",
+                                             FieldType.guid)  },
+
+            { "PrimaryLicenseId",  new ColumnDefinition ("PrimaryLicenseId",
+                                             "isnull(ppl.Entityid,0)",
+                                             AssetTables.Document,
+                                             "Products_Links",
+                                             "Entityid",
+                                             FieldType.guid)  },
+
+            { "AdditionalLicenseId",  new ColumnDefinition ("AdditionalLicenseId",
+                                             "isnull(opl.Entityid,0)",
+                                             AssetTables.Document,
+                                             "Products_Links",
+                                             "Entityid",
+                                             FieldType.guid)  },
+            { "CredentialId",  new ColumnDefinition ("CredentialId",
+                                             "acr.CredentialmasterDocId",
+                                             AssetTables.Document,
+                                             "AssetCredentials",
+                                             "CredentialmasterDocId",
+                                             FieldType.guid)  },
+           { "UserId",  new ColumnDefinition ("UserId",
+                                             "u.MemberDocId",
+                                             AssetTables.Document,
+                                             "User",
+                                             "MemberDocId",
+                                             FieldType.guid)  },
+           { "ClubId",  new ColumnDefinition ("ClubId",
+                                             "uc.DocId",
+                                             AssetTables.Document,
+                                             "UserClubs", //cte
+                                             "ClubId",
+                                             FieldType.guid)  },
+           { "ClubDocId",  new ColumnDefinition ("ClubDocId",
+                                             "uc.DocId",
+                                             null,
+                                             "UserClubs", //cte
+                                             "ClubId",
+                                             FieldType.number)  },
+           { "ReasonId", new ColumnDefinition ("Reason",
+                                             "r.ActionReasonId",
+                                             AssetTables.ActionReason,
+                                             "ActionReason",
+                                             "ActionReasonId",
+                                             FieldType.guid)  },
+          { "Reason", new ColumnDefinition ("Reason",
+                                             "r.ReasonName",
+                                             null,
+                                             "ActionReason",
+                                             "ReasonName",
+                                             FieldType.text)  },
+
+          { "TransferStatus", new ColumnDefinition ("TransferStatus",
+                                             "tst.Name",
+                                             null,
+                                             "AssetStatus",
+                                             "Name",
+                                             FieldType.text)  },
+          { "TransferDate", new ColumnDefinition ("TransferDate",
+                                             "atr.TransferDate",
+                                             null,
+                                             "AssetOwnershipTransfers",
+                                             "TransferDate",
+                                             FieldType.date)  },
+
+        };
+
+        public static ColumnDefinition GetColumnName(string searchColumnName)
+        {
+            return ColumnNameDictionary.ContainsKey(searchColumnName) ? ColumnNameDictionary[searchColumnName] :
+                   new ColumnDefinition("", "", null, "", "", FieldType.text);
+        }
+            
+    }
+
+    public class ColumnDefinition
+    {
+        public ColumnDefinition(
+            string nameInView,
+            string nameInQuery,
+            AssetTables? guidEntity,
+            string sourceEntity,
+            string sourceField,
+            FieldType fieldType)
+        {
+            NameInView = nameInView;
+            NameInQuery = nameInQuery;
+            GuidEntity = guidEntity;
+            SourceEntity = sourceEntity;
+            SourceField = sourceField;
+            FieldType = fieldType;
+        }
+
+        public string NameInView { get; set; }
+        public string NameInQuery { get; set; }
+        public AssetTables? GuidEntity { get; set; }
+        public string SourceEntity { get; set; }
+        public string SourceField { get; set; }
+        public FieldType FieldType { get; set; }
+    }
+
+    public enum FieldType
+    {
+        number,
+        text,
+        guid,
+        date
+    }
+
+
+
+}
