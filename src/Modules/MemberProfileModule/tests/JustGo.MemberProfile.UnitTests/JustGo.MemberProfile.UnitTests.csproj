@@ -17,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JustGo.MemberProfile.Application\JustGo.MemberProfile.Application.csproj" />
-    <ProjectReference Include="..\JustGo.MemberProfile.Domain\JustGo.MemberProfile.Domain.csproj" />
+    <ProjectReference Include="..\..\JustGo.MemberProfile.Application\JustGo.MemberProfile.Application.csproj" />
+    <ProjectReference Include="..\..\JustGo.MemberProfile.Domain\JustGo.MemberProfile.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

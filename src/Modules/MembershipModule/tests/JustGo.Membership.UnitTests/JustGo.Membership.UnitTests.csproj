@@ -9,8 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
-    <PackageReference Include="MediatR" Version="12.4.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageReference Include="FluentAssertions" Version="8.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.9.2" />
@@ -18,10 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\AssetManagementModule\JustGo.AssetManagement.API\JustGo.AssetManagement.API.csproj" />
-    <ProjectReference Include="..\MobileApps.API\MobileApps.API.csproj" />
-    <ProjectReference Include="..\MobileApps.Application\MobileApps.Application.csproj" />
-    <ProjectReference Include="..\MobileApps.Domain\MobileApps.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\JustGo.Authentication\JustGo.Authentication.csproj" />
+    <ProjectReference Include="..\..\JustGo.Membership.Application\JustGo.Membership.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

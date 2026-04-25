@@ -17,8 +17,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\JustGo.Authentication\JustGo.Authentication.csproj" />
-	  <ProjectReference Include="..\JustGo.Credential.Application\JustGo.Credential.Application.csproj" />
+	  <ProjectReference Include="..\..\..\..\JustGo.Authentication\JustGo.Authentication.csproj" />
+	  <ProjectReference Include="..\..\AuthModule.Application\AuthModule.Application.csproj" />
+	  <ProjectReference Include="..\..\AuthModule.Domain\AuthModule.Domain.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

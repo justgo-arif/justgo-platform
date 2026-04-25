@@ -17,12 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\JustGo.Authentication\JustGo.Authentication.csproj" />
-    <ProjectReference Include="..\JustGo.Membership.Application\JustGo.Membership.Application.csproj" />
+    <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
+    <ProjectReference Include="..\..\JustGo.Booking.Application\JustGo.Booking.Application.csproj" />
+    <ProjectReference Include="..\..\JustGo.Booking.Domain\JustGo.Booking.Domain.csproj" />
   </ItemGroup>
 
 </Project>
