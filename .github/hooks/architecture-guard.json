@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "type": "command",
+        "description": "architecture-guard: Validates module boundaries after C# file edits",
+        "condition": "toolName in ['replace_string_in_file', 'create_file', 'multi_replace_string_in_file'] && filePath.endsWith('.cs') && filePath.startsWith('src/Modules/')",
+        "windows": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-architecture.ps1",
+        "linux": "bash scripts/validate-architecture.sh",
+        "osx": "bash scripts/validate-architecture.sh",
+        "cwd": ".",
+        "timeout": 30
+      }
+    ]
+  }
+}
