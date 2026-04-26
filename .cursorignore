@@ -1,0 +1,71 @@
+# .aiignore — canonical AI agent ignore rules
+# Copied to: .claudeignore, .copilotignore, .cursorignore
+# Keep all files in sync when updating this one.
+
+# Compiled output — no signal, just noise
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+out/
+
+# IDE state
+.vs/
+.idea/
+*.user
+*.suo
+
+# Test & coverage output
+[Tt]est[Rr]esult*/
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+BenchmarkDotNet.Artifacts/
+
+# Logs
+[Ll]og/
+[Ll]ogs/
+*.log
+*.svclog
+
+# Database binaries — binary, large, no value to agents
+*.mdf
+*.ldf
+*.ndf
+*.bacpac
+*.bak
+
+# Secrets & certs — never feed to agents
+appsettings.json
+appsettings.Development.json
+appsettings.*.json
+*.pfx
+*.p12
+*.snk
+PublishScripts/
+*.pubxml
+
+# NuGet restore artifacts
+**/[Pp]ackages/
+*.nuget.props
+*.nuget.targets
+*.nupkg
+*.snupkg
+
+# Build tooling noise
+*.binlog
+*.tmp
+*.tmp_proj
+Generated\ Files/
+Generated_Code/
+FakesAssemblies/
+
+# Node (tooling only, not app code)
+node_modules/
+
+# Memory & agent workspace files (Claude, Copilot, etc.)
+.claude/
+.github/copilot-workspace/

@@ -377,3 +377,6 @@ appsettings.Development.json
 appsettings-Development.json
 
 /Modules/MobileAppsModule/MobileApps.Application/Features/Class/V3.zip
+
+# AI tool ignore files — generated from .aiignore, do not edit directly
+# These files are managed by pre-commit hook and should be committed

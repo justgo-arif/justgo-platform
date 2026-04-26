@@ -1,0 +1,5 @@
+#!/bin/sh
+for target in .claudeignore .copilotignore .cursorignore; do
+  cp .aiignore "$target"
+  git add "$target"
+done
