@@ -136,38 +136,149 @@ dotnet restore
 # Build the solution
 dotnet build
 
-# Run database migrations (if configured)
-dotnet ef database update --project src/JustGoAPI.API
+# (Optional) Apply pending EF Core migrations — skip if restoring from .bacpac
+# dotnet ef database update --project src/JustGoAPI.API
 ```
+
+---
+
+## 🗄️ Database Setup
+
+> **Note:** Ensure your **Azure VPN is connected** before attempting any database access.
+
+### Databases
+
+The platform uses two SQL Server databases:
+
+| Database | Purpose |
+|---|---|
+| [`Development_286`](https://drive.google.com/file/d/1SV8ih1DBnPac-FIf7Ke_UM31ZXqw9zEM/view?usp=drive_link) | Main application database (bookings, members, assets, etc.) |
+| [`restapi_common_db_v1`](https://drive.google.com/file/d/1jaMhvEMs7a4ktv5n1puOUewHKWZXnXPB/view?usp=sharing) | Shared API / tenant management database |
+
+### Restore from Backup (.bacpac)
+
+Download links are listed in the **Databases** table above.
+
+> 🔑 **Zip extraction password:** `justgobd1234`
+
+Use SQL Server Management Studio (SSMS) to restore each database from a `.bacpac` backup file:
+
+1. Open **SQL Server Management Studio (SSMS)**
+2. In Object Explorer, right-click **Databases**
+3. Select **Import Data-tier Application...**
+4. Browse to your `.bacpac` file and click **Next**
+5. Set the **New Database Name**:
+   - `Development_286`
+   - `restapi_common_db_v1` *(repeat for the second database)*
+6. Review settings and click **Finish**
+
+### SQL Server User & Login Setup
+
+Run the following script as a SQL Server administrator. Replace `YOUR_SQL_LOGIN` and the password placeholder with your actual values.
+
+```sql
+USE master;
+GO
+
+-- 1. Create login
+CREATE LOGIN [YOUR_SQL_LOGIN]
+WITH PASSWORD = 'YourStrongPassword@123',
+     CHECK_POLICY = OFF;
+GO
+
+-- 2. Enable login
+ALTER LOGIN [YOUR_SQL_LOGIN] ENABLE;
+GO
+
+-- 3. Grant access to Development_286
+USE [Development_286];
+GO
+
+CREATE USER [YOUR_SQL_LOGIN] FOR LOGIN [YOUR_SQL_LOGIN];
+ALTER ROLE [db_owner] ADD MEMBER [YOUR_SQL_LOGIN];
+GO
+
+-- 4. Grant access to restapi_common_db_v1
+USE [restapi_common_db_v1];
+GO
+
+CREATE USER [YOUR_SQL_LOGIN] FOR LOGIN [YOUR_SQL_LOGIN];
+ALTER ROLE [db_owner] ADD MEMBER [YOUR_SQL_LOGIN];
+GO
+```
+
+> **Security:** `CHECK_POLICY = OFF` is for development convenience only. Use strong passwords and enforce password policy in production. Consider a less-privileged role than `db_owner` for production workloads.
+
+### Verify Setup
+
+**Check the login exists and is enabled (run on master):**
+
+```sql
+SELECT name, is_disabled
+FROM sys.server_principals
+WHERE name = 'YOUR_SQL_LOGIN';
+```
+
+**Check the user exists in each database:**
+
+```sql
+USE [Development_286];
+SELECT name FROM sys.database_principals WHERE name = 'YOUR_SQL_LOGIN';
+
+USE [restapi_common_db_v1];
+SELECT name FROM sys.database_principals WHERE name = 'YOUR_SQL_LOGIN';
+```
+
+### Tenant Initialization
+
+After restoring the databases, run these queries against `restapi_common_db_v1` to configure local tenant data:
+
+```sql
+-- View current tenant data
+SELECT * FROM Tenants;
+SELECT * FROM TenantDatabases;
+
+-- Update API URL to match your local port
+UPDATE Tenants
+SET ApiUrl = 'https://localhost:7052/api/Account/GetMessage';
+
+-- Update tenant domain URL
+UPDATE Tenants
+SET TenantDomainUrl = 'https://localhost:44347/';
+
+-- Update database name reference
+UPDATE TenantDatabases
+SET DatabaseName = 'Development_286';
+
+-- Update database credentials
+-- DBUserId and DBPassword must be the *encrypted* values of the SQL login
+-- and password created in the "SQL Server User & Login Setup" step above.
+-- Use the application's encryption utility to generate these values first.
+UPDATE TenantDatabases
+SET DBUserId   = '<encrypted-sql-login>',
+    DBPassword = '<encrypted-sql-password>';
+
+-- Verify user data
+SELECT TOP 1 * FROM [User];
+```
+
+> **Important:** `DBUserId` and `DBPassword` store **encrypted** text, not plain-text credentials. Generate the encrypted values using the platform's encryption utility (matching the same algorithm used by the application) before running the update above.
 
 ---
 
 ### Configuration
 
-Configure `appsettings.json` or set environment variables:
+Update the `ConnectionStrings` section in `appsettings.Development.json` with your SQL Server instance and the login created in the setup step above:
 
 ```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=JustGoDB;Trusted_Connection=True;TrustServerCertificate=True;"
-  },
-  "Jwt": {
-    "Secret": "your-256-bit-secret-key-here",
-    "Issuer": "JustGoAPI",
-    "Audience": "JustGoClients",
-    "ExpiryInMinutes": 60
-  },
-  "Serilog": {
-    "MinimumLevel": "Information"
-  }
+"ConnectionStrings": {
+  "ApiConnection": "Data Source=YOUR_SERVER,1433;initial catalog=restapi_common_db_v1;User ID=YOUR_SQL_LOGIN;Password=YOUR_PASSWORD;Encrypt=False;TrustServerCertificate=False;",
+  "AzolveCentralDB": "Server=YOUR_SERVER;Database=YOUR_DB_NAME;User Id=YOUR_SQL_LOGIN;Password=YOUR_PASSWORD;Encrypt=False;TrustServerCertificate=False;",
+  "AddressPickerCore": "Server=YOUR_SERVER;Database=YOUR_DB_NAME;User Id=YOUR_SQL_LOGIN;Password=YOUR_PASSWORD;Encrypt=False;TrustServerCertificate=False;"
 }
 ```
 
-**Environment Variables:**
-```bash
-ConnectionStrings__Default=Server=localhost;Database=JustGoDB;...
-Jwt__Secret=your-secret-key
-```
+> **Tip:** Never commit real credentials to source control. Use [`dotnet user-secrets`](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) or environment variables for local development.
 
 ---
 
@@ -183,8 +294,6 @@ dotnet run --project src/JustGoAPI.API
 
 The API will be available at: `http://localhost:5000`
 
----
-
 ## 🌐 Usage
 
 **Base URL:** `http://localhost:5000`
@@ -195,41 +304,47 @@ The API will be available at: `http://localhost:5000`
 
 **Example API Requests:**
 
-```http
-# Get all assets
-GET /api/assets
-
-# Create a new booking
-POST /api/bookings
-Content-Type: application/json
-
-{
-  "classId": "123",
-  "memberId": "456",
-  "bookingDate": "2026-04-27"
-}
-
-# Get member profile
-GET /api/members/{id}/profile
-
-# Get financial transactions
-GET /api/finance/transactions?fromDate=2026-01-01
-```
-
 **Authentication:**
 ```http
-# Login
-POST /api/auth/login
+# Authenticate and retrieve a JWT token
+POST /api/v1/accounts/authenticate
 Content-Type: application/json
 
 {
-  "email": "user@example.com",
-  "password": "your-password"
+  "tenantClientId": "DTQ-01",
+  "loginId": "admin",
+  "password": "tes-S1sapphire@"
 }
 
 # Use the returned JWT token in subsequent requests
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Authorization: Bearer <token-from-response>
 ```
+
+> **Note:** The credentials above are for local development/testing only. Do not use them in any shared or production environment.
+
+**Verify Token (subsequent call):**
+```http
+# Retrieve a user by their sync ID — use the JWT token from the authenticate response
+GET /api/v1/users/user-by-guid?userSyncId=<USER_SYNC_ID>
+Accept: */*
+Authorization: Bearer <token-from-authenticate-response>
+X-Tenant-Id: <TENANT_CLIENT_ID>
+```
+
+```bash
+# cURL equivalent
+curl -X GET \
+  'http://localhost:5152/api/v1/users/user-by-guid?userSyncId=<USER_SYNC_ID>' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer <token-from-authenticate-response>' \
+  -H 'X-Tenant-Id: <TENANT_CLIENT_ID>'
+```
+
+| Placeholder | Description |
+|---|---|
+| `<USER_SYNC_ID>` | The `userSyncId` GUID returned in the authenticate response |
+| `<token-from-authenticate-response>` | The JWT token returned by the authenticate endpoint |
+| `<TENANT_CLIENT_ID>` | Tenant identifier, e.g. `DTQ-01` |
 
 ---
 
@@ -301,6 +416,16 @@ We welcome contributions! Please follow these steps:
 3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
 4. **Push** to the branch (`git push origin feature/amazing-feature`)
 5. Open a **Pull Request**
+
+### Branching Strategy
+
+Current running version: **V1**
+
+| Branch | Purpose | Current Branch Name |
+|---|---|---|
+| `dev` | Developer branch | `Dev/V1/286_V1_JustGo_RestAPI` |
+| `sandbox` | Testing environment / patch branch | `Sand/V1/286_V1_JustGo_RestAPI` |
+| `prod` | Production branch / production patching | `Prod/V1/286_V1_JustGo_RestAPI` |
 
 **Development Guidelines:**
 - Follow the existing code style and naming conventions

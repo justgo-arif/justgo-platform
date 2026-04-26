@@ -1,0 +1,17 @@
+services:
+  sqlserver:
+    build:
+      context: .
+      dockerfile: Dockerfile        # points to your custom FTS-enabled image
+    image: sql-server-fts:2022      # tags the built image locally for reuse
+    container_name: sql_architect
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "StrongPassword123!"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+volumes:
+  sql_data:
