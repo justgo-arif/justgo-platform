@@ -22,13 +22,118 @@ This document is prepared from source-code observation and architectural review 
 
 ## Table of Contents
 
-1. Introduction
-2. Overall Description
-3. System Features and Functional Requirements
-4. External Interface Requirements
-5. Non-Functional Requirements
-6. Other Requirements
-7. Endpoint Traceability Appendix
+- Document Control
+  - Document Information
+- Glossary
+- 1. Introduction
+  - 1.1. Purpose
+  - 1.2. Document Conventions
+  - 1.3. Intended Audience
+  - 1.4. Project Scope
+  - 1.5. References
+- 2. Overall Description
+  - 2.1. Product Perspective
+  - 2.2. Product Functions
+  - 2.3. User Classes, Characteristics, and Needs
+  - 2.4. Operating Environment
+  - 2.5. Design and Implementation Constraints
+  - 2.6. User Documentation
+  - 2.7. Assumptions and Dependencies
+- 3. System Features and Functional Requirements
+  - 3.1. User Management and Authentication
+    - 3.1.1. Accounts
+    - 3.1.2. Authorization
+    - 3.1.3. Cache Invalidation
+    - 3.1.4. Files
+    - 3.1.5. Lookup
+    - 3.1.6. Multi-Factor Authentication
+    - 3.1.7. Notes
+    - 3.1.8. System Settings
+    - 3.1.9. Tenants
+    - 3.1.10. User Interface Permissions
+    - 3.1.11. Users
+  - 3.2. Member Profile Management
+    - 3.2.1. Address Pickers
+    - 3.2.2. Member Basic Details
+    - 3.2.3. Member Family
+    - 3.2.4. Member Notes
+    - 3.2.5. Members
+    - 3.2.6. Preferences
+    - 3.2.7. User Emergency Contacts
+  - 3.3. Organisation and Club Management
+    - 3.3.1. Organisations
+  - 3.4. Membership Management
+    - 3.4.1. Memberships
+    - 3.4.2. Memberships Purchase
+  - 3.5. Booking Management
+    - 3.5.1. Booking Catalog
+    - 3.5.2. Booking Class
+    - 3.5.3. Booking Pricing Chart Discount
+    - 3.5.4. Booking Transfer Request
+    - 3.5.5. Class Management
+    - 3.5.6. Class Term
+    - 3.5.7. Profile Class Booking
+    - 3.5.8. Profile Course Booking
+  - 3.6. Asset Management
+    - 3.6.1. Asset Audit
+    - 3.6.2. Asset Categories
+    - 3.6.3. Asset Checkout
+    - 3.6.4. Asset Credentials
+    - 3.6.5. Asset Leases
+    - 3.6.6. Asset Licenses
+    - 3.6.7. Asset Metadata
+    - 3.6.8. Asset Ownership Transfers
+    - 3.6.9. Asset Registers
+    - 3.6.10. Asset Reports
+    - 3.6.11. Asset Types
+    - 3.6.12. Clubs
+    - 3.6.13. Workflows
+  - 3.7. Credential Management
+    - 3.7.1. Credentials
+  - 3.8. Field and Preference Management
+    - 3.8.1. Entity Extensions
+  - 3.9. Finance and Payment Management
+    - 3.9.1. Balances
+    - 3.9.2. Finance Grid View
+    - 3.9.3. Installments
+    - 3.9.4. Payment Account
+    - 3.9.5. Payment Console
+    - 3.9.6. Payments
+    - 3.9.7. Products
+    - 3.9.8. Subscriptions
+  - 3.10. Mobile Application Services
+    - 3.10.1. Classes
+    - 3.10.2. Clubs
+    - 3.10.3. Events
+    - 3.10.4. General Settings
+    - 3.10.5. Multi-Factor Authentication
+    - 3.10.6. Two-Factor Authentication
+  - 3.11. Results and Competition Management
+    - 3.11.1. Events
+    - 3.11.2. Results
+    - 3.11.3. Sports Results
+    - 3.11.4. Upload Result
+- 4. External Interface Requirements
+  - 4.1. User Interfaces
+  - 4.2. Hardware Interfaces
+  - 4.3. Software Interfaces
+  - 4.4. Communications Interfaces
+- 5. Non-Functional Requirements
+  - 5.1. Performance Requirements
+  - 5.2. Security Requirements
+  - 5.3. Reliability and Availability
+  - 5.4. Usability and Accessibility
+  - 5.5. Maintainability and Portability
+  - 5.6. Legal, Compliance, and Operational Requirements
+- 6. Other Requirements
+  - 6.1. Data Migration
+  - 6.2. Internationalization Requirements
+  - 6.3. Training Requirements
+  - 6.4. Appendix A: Analysis Models
+    - A.1. System Context Diagram
+    - A.2. Container Diagram
+  - 6.5. Appendix B: Issues List
+- 7. Endpoint Traceability Appendix
 
 ## Glossary
 
@@ -160,13 +265,19 @@ The system SHOULD be supported by user documentation for member self-service, cl
 
 ## 3. System Features and Functional Requirements
 
+[Obsidian SRS Map: [[MOC|Open layered map]]]
+
 This section describes grouped business capabilities. Each requirement maps to one or more observed backend endpoints; endpoint-level evidence is listed in `docs/srs-endpoint-traceability-matrix.md` and Section 7.
 
 ### 3.1. User Management and Authentication
 
+
+
 Business scope: identity, login, tenant resolution, authorization, MFA, lookup data, shared notes, attachments, and user/security administration.
 
 #### 3.1.1. Accounts
+
+
 
 The system SHALL support accounts workflows within the User Management and Authentication feature area.
 
@@ -178,6 +289,8 @@ The system SHALL support accounts workflows within the User Management and Authe
 
 #### 3.1.2. Authorization
 
+
+
 The system SHALL support authorization workflows within the User Management and Authentication feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -185,6 +298,8 @@ The system SHALL support authorization workflows within the User Management and 
 | FR-004. | The system SHALL evaluate authorization and user-interface permissions for requested policies, actions, resources, and fields so that users, administrators, and tenants can access the platform securely and consistently. | EP-001, EP-002, EP-003, EP-004 |
 
 #### 3.1.3. Cache Invalidation
+
+
 
 The system SHALL support cache invalidation workflows within the User Management and Authentication feature area.
 
@@ -194,6 +309,8 @@ The system SHALL support cache invalidation workflows within the User Management
 
 #### 3.1.4. Files
 
+
+
 The system SHALL support files workflows within the User Management and Authentication feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -201,6 +318,8 @@ The system SHALL support files workflows within the User Management and Authenti
 | FR-006. | The system SHALL allow authorized users to upload, preview, process, and manage files used by downstream workflows so that users, administrators, and tenants can access the platform securely and consistently. | EP-023, EP-024, EP-025, EP-026, EP-027, EP-028, EP-029, EP-030, EP-031, EP-032, EP-033, EP-034, EP-035, EP-036 |
 
 #### 3.1.5. Lookup
+
+
 
 The system SHALL support lookup workflows within the User Management and Authentication feature area.
 
@@ -210,6 +329,8 @@ The system SHALL support lookup workflows within the User Management and Authent
 
 #### 3.1.6. Multi-Factor Authentication
 
+
+
 The system SHALL support multi-factor authentication workflows within the User Management and Authentication feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -217,6 +338,8 @@ The system SHALL support multi-factor authentication workflows within the User M
 | FR-008. | The system SHALL support multi-factor authentication enrollment, verification, one-time-password handling, and status management so that users, administrators, and tenants can access the platform securely and consistently. | EP-042, EP-043, EP-044, EP-045, EP-046, EP-047, EP-048, EP-049, EP-050, EP-051, EP-052, EP-053, EP-054, EP-055, EP-056 |
 
 #### 3.1.7. Notes
+
+
 
 The system SHALL support notes workflows within the User Management and Authentication feature area.
 
@@ -226,6 +349,8 @@ The system SHALL support notes workflows within the User Management and Authenti
 
 #### 3.1.8. System Settings
 
+
+
 The system SHALL support system settings workflows within the User Management and Authentication feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -233,6 +358,8 @@ The system SHALL support system settings workflows within the User Management an
 | FR-010. | The system SHALL allow authorized users to search, filter, page, and review system settings records so that users, administrators, and tenants can access the platform securely and consistently. | EP-063 |
 
 #### 3.1.9. Tenants
+
+
 
 The system SHALL support tenants workflows within the User Management and Authentication feature area.
 
@@ -244,6 +371,8 @@ The system SHALL support tenants workflows within the User Management and Authen
 
 #### 3.1.10. User Interface Permissions
 
+
+
 The system SHALL support user interface permissions workflows within the User Management and Authentication feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -251,6 +380,8 @@ The system SHALL support user interface permissions workflows within the User Ma
 | FR-014. | The system SHALL evaluate authorization and user-interface permissions for requested policies, actions, resources, and fields so that users, administrators, and tenants can access the platform securely and consistently. | EP-072, EP-073, EP-074 |
 
 #### 3.1.11. Users
+
+
 
 The system SHALL support users workflows within the User Management and Authentication feature area.
 
@@ -262,9 +393,13 @@ The system SHALL support users workflows within the User Management and Authenti
 
 ### 3.2. Member Profile Management
 
+
+
 Business scope: member profile, family, emergency contacts, preferences, notes, and member self-service profile workflows.
 
 #### 3.2.1. Address Pickers
+
+
 
 The system SHALL support address pickers workflows within the Member Profile Management feature area.
 
@@ -273,6 +408,8 @@ The system SHALL support address pickers workflows within the Member Profile Man
 | FR-018. | The system SHALL allow authorized users to create, submit, or process address pickers records while preserving required business data so that members and support users can maintain accurate personal, family, contact, and preference information. | EP-081 |
 
 #### 3.2.2. Member Basic Details
+
+
 
 The system SHALL support member basic details workflows within the Member Profile Management feature area.
 
@@ -284,6 +421,8 @@ The system SHALL support member basic details workflows within the Member Profil
 | FR-022. | The system SHALL validate member basic details eligibility, rules, duplicates, or requested state changes and return clear outcomes so that members and support users can maintain accurate personal, family, contact, and preference information. | EP-086 |
 
 #### 3.2.3. Member Family
+
+
 
 The system SHALL support member family workflows within the Member Profile Management feature area.
 
@@ -297,6 +436,8 @@ The system SHALL support member family workflows within the Member Profile Manag
 
 #### 3.2.4. Member Notes
 
+
+
 The system SHALL support member notes workflows within the Member Profile Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -304,6 +445,8 @@ The system SHALL support member notes workflows within the Member Profile Manage
 | FR-028. | The system SHALL allow authorized users to create, review, update, and remove notes for member notes so that members and support users can maintain accurate personal, family, contact, and preference information. | EP-096, EP-097, EP-098, EP-099 |
 
 #### 3.2.5. Members
+
+
 
 The system SHALL support members workflows within the Member Profile Management feature area.
 
@@ -317,6 +460,8 @@ The system SHALL support members workflows within the Member Profile Management 
 
 #### 3.2.6. Preferences
 
+
+
 The system SHALL support preferences workflows within the Member Profile Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -326,6 +471,8 @@ The system SHALL support preferences workflows within the Member Profile Managem
 | FR-036. | The system SHALL provide preferences lookup, metadata, status, field, and configuration data required by client workflows so that members and support users can maintain accurate personal, family, contact, and preference information. | EP-111 |
 
 #### 3.2.7. User Emergency Contacts
+
+
 
 The system SHALL support user emergency contacts workflows within the Member Profile Management feature area.
 
@@ -337,9 +484,13 @@ The system SHALL support user emergency contacts workflows within the Member Pro
 
 ### 3.3. Organisation and Club Management
 
+
+
 Business scope: clubs, organisation hierarchy, member organisation relationships, join/leave/transfer workflows, and primary club management.
 
 #### 3.3.1. Organisations
+
+
 
 The system SHALL support organisations workflows within the Organisation and Club Management feature area.
 
@@ -352,9 +503,13 @@ The system SHALL support organisations workflows within the Organisation and Clu
 
 ### 3.4. Membership Management
 
+
+
 Business scope: membership plans, licenses, family membership information, member entitlements, and downloadable membership artifacts.
 
 #### 3.4.1. Memberships
+
+
 
 The system SHALL support memberships workflows within the Membership Management feature area.
 
@@ -367,6 +522,8 @@ The system SHALL support memberships workflows within the Membership Management 
 
 #### 3.4.2. Memberships Purchase
 
+
+
 The system SHALL support memberships purchase workflows within the Membership Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -377,9 +534,13 @@ The system SHALL support memberships purchase workflows within the Membership Ma
 
 ### 3.5. Booking Management
 
+
+
 Business scope: class, course, session, attendee, occurrence, eligibility, attendance, and profile booking operations.
 
 #### 3.5.1. Booking Catalog
+
+
 
 The system SHALL support booking catalog workflows within the Booking Management feature area.
 
@@ -389,6 +550,8 @@ The system SHALL support booking catalog workflows within the Booking Management
 
 #### 3.5.2. Booking Class
 
+
+
 The system SHALL support booking class workflows within the Booking Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -396,6 +559,8 @@ The system SHALL support booking class workflows within the Booking Management f
 | FR-052. | The system SHALL allow authorized users to review, validate, and manage booking-related information for booking class so that members, coaches, and administrators can manage participation in classes, courses, events, and sessions. | EP-149, EP-150, EP-151, EP-152, EP-153, EP-154, EP-155, EP-156, EP-157, EP-158, EP-159 |
 
 #### 3.5.3. Booking Pricing Chart Discount
+
+
 
 The system SHALL support booking pricing chart discount workflows within the Booking Management feature area.
 
@@ -405,6 +570,8 @@ The system SHALL support booking pricing chart discount workflows within the Boo
 
 #### 3.5.4. Booking Transfer Request
 
+
+
 The system SHALL support booking transfer request workflows within the Booking Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -413,6 +580,8 @@ The system SHALL support booking transfer request workflows within the Booking M
 
 #### 3.5.5. Class Management
 
+
+
 The system SHALL support class management workflows within the Booking Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -420,6 +589,8 @@ The system SHALL support class management workflows within the Booking Managemen
 | FR-055. | The system SHALL support class management workflows so that members, coaches, and administrators can manage participation in classes, courses, events, and sessions. | EP-167, EP-168 |
 
 #### 3.5.6. Class Term
+
+
 
 The system SHALL support class term workflows within the Booking Management feature area.
 
@@ -430,6 +601,8 @@ The system SHALL support class term workflows within the Booking Management feat
 
 #### 3.5.7. Profile Class Booking
 
+
+
 The system SHALL support profile class booking workflows within the Booking Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -437,6 +610,8 @@ The system SHALL support profile class booking workflows within the Booking Mana
 | FR-058. | The system SHALL allow authorized users to upload, preview, process, and manage files used by downstream workflows so that members, coaches, and administrators can manage participation in classes, courses, events, and sessions. | EP-171, EP-172 |
 
 #### 3.5.8. Profile Course Booking
+
+
 
 The system SHALL support profile course booking workflows within the Booking Management feature area.
 
@@ -446,9 +621,13 @@ The system SHALL support profile course booking workflows within the Booking Man
 
 ### 3.6. Asset Management
 
+
+
 Business scope: asset registers, asset categories, licenses, transfers, inspections, workflow status, and operational asset administration.
 
 #### 3.6.1. Asset Audit
+
+
 
 The system SHALL support asset audit workflows within the Asset Management feature area.
 
@@ -458,6 +637,8 @@ The system SHALL support asset audit workflows within the Asset Management featu
 
 #### 3.6.2. Asset Categories
 
+
+
 The system SHALL support asset categories workflows within the Asset Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -466,6 +647,8 @@ The system SHALL support asset categories workflows within the Asset Management 
 
 #### 3.6.3. Asset Checkout
 
+
+
 The system SHALL support asset checkout workflows within the Asset Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -473,6 +656,8 @@ The system SHALL support asset checkout workflows within the Asset Management fe
 | FR-062. | The system SHALL validate asset checkout eligibility, rules, duplicates, or requested state changes and return clear outcomes so that asset owners and administrators can maintain controlled, auditable asset operations. | EP-178, EP-179 |
 
 #### 3.6.4. Asset Credentials
+
+
 
 The system SHALL support asset credentials workflows within the Asset Management feature area.
 
@@ -485,6 +670,8 @@ The system SHALL support asset credentials workflows within the Asset Management
 | FR-067. | The system SHALL provide asset credentials lookup, metadata, status, field, and configuration data required by client workflows so that asset owners and administrators can maintain controlled, auditable asset operations. | EP-181 |
 
 #### 3.6.5. Asset Leases
+
+
 
 The system SHALL support asset leases workflows within the Asset Management feature area.
 
@@ -500,6 +687,8 @@ The system SHALL support asset leases workflows within the Asset Management feat
 
 #### 3.6.6. Asset Licenses
 
+
+
 The system SHALL support asset licenses workflows within the Asset Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -512,6 +701,8 @@ The system SHALL support asset licenses workflows within the Asset Management fe
 
 #### 3.6.7. Asset Metadata
 
+
+
 The system SHALL support asset metadata workflows within the Asset Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -519,6 +710,8 @@ The system SHALL support asset metadata workflows within the Asset Management fe
 | FR-080. | The system SHALL provide reference lookup, metadata, status, field, and configuration data required by client workflows so that asset owners and administrators can maintain controlled, auditable asset operations. | EP-210, EP-211, EP-212, EP-213, EP-214, EP-215, EP-216, EP-217, EP-218, EP-219, EP-220 |
 
 #### 3.6.8. Asset Ownership Transfers
+
+
 
 The system SHALL support asset ownership transfers workflows within the Asset Management feature area.
 
@@ -531,6 +724,8 @@ The system SHALL support asset ownership transfers workflows within the Asset Ma
 | FR-085. | The system SHALL provide asset ownership transfers lookup, metadata, status, field, and configuration data required by client workflows so that asset owners and administrators can maintain controlled, auditable asset operations. | EP-222, EP-227 |
 
 #### 3.6.9. Asset Registers
+
+
 
 The system SHALL support asset registers workflows within the Asset Management feature area.
 
@@ -546,6 +741,8 @@ The system SHALL support asset registers workflows within the Asset Management f
 
 #### 3.6.10. Asset Reports
 
+
+
 The system SHALL support asset reports workflows within the Asset Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -555,6 +752,8 @@ The system SHALL support asset reports workflows within the Asset Management fea
 
 #### 3.6.11. Asset Types
 
+
+
 The system SHALL support asset types workflows within the Asset Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -562,6 +761,8 @@ The system SHALL support asset types workflows within the Asset Management featu
 | FR-095. | The system SHALL provide asset types lookup, metadata, status, field, and configuration data required by client workflows so that asset owners and administrators can maintain controlled, auditable asset operations. | EP-243, EP-244 |
 
 #### 3.6.12. Clubs
+
+
 
 The system SHALL support clubs workflows within the Asset Management feature area.
 
@@ -573,6 +774,8 @@ The system SHALL support clubs workflows within the Asset Management feature are
 
 #### 3.6.13. Workflows
 
+
+
 The system SHALL support workflows workflows within the Asset Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -581,9 +784,13 @@ The system SHALL support workflows workflows within the Asset Management feature
 
 ### 3.7. Credential Management
 
+
+
 Business scope: member credentials, credential templates, issuance, approvals, and credential-related member data.
 
 #### 3.7.1. Credentials
+
+
 
 The system SHALL support credentials workflows within the Credential Management feature area.
 
@@ -594,9 +801,13 @@ The system SHALL support credentials workflows within the Credential Management 
 
 ### 3.8. Field and Preference Management
 
+
+
 Business scope: custom extension fields, field sets, schemas, entity-specific metadata, and configurable data capture.
 
 #### 3.8.1. Entity Extensions
+
+
 
 The system SHALL support entity extensions workflows within the Field and Preference Management feature area.
 
@@ -609,9 +820,13 @@ The system SHALL support entity extensions workflows within the Field and Prefer
 
 ### 3.9. Finance and Payment Management
 
+
+
 Business scope: payments, balances, subscriptions, installments, payment accounts, products, refunds, and finance grid views.
 
 #### 3.9.1. Balances
+
+
 
 The system SHALL support balances workflows within the Finance and Payment Management feature area.
 
@@ -621,6 +836,8 @@ The system SHALL support balances workflows within the Finance and Payment Manag
 
 #### 3.9.2. Finance Grid View
 
+
+
 The system SHALL support finance grid view workflows within the Finance and Payment Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -628,6 +845,8 @@ The system SHALL support finance grid view workflows within the Finance and Paym
 | FR-107. | The system SHALL allow authorized users to search, filter, page, and review finance grid view records so that organisations can manage payments, balances, recurring plans, products, and payment accounts. | EP-273, EP-274, EP-275, EP-276, EP-277, EP-278 |
 
 #### 3.9.3. Installments
+
+
 
 The system SHALL support installments workflows within the Finance and Payment Management feature area.
 
@@ -639,6 +858,8 @@ The system SHALL support installments workflows within the Finance and Payment M
 
 #### 3.9.4. Payment Account
 
+
+
 The system SHALL support payment account workflows within the Finance and Payment Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -648,6 +869,8 @@ The system SHALL support payment account workflows within the Finance and Paymen
 
 #### 3.9.5. Payment Console
 
+
+
 The system SHALL support payment console workflows within the Finance and Payment Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -655,6 +878,8 @@ The system SHALL support payment console workflows within the Finance and Paymen
 | FR-113. | The system SHALL allow authorized finance users to review payment receipts, payment details, payment methods, refund eligibility, terminals, logs, and payment history so that organisations can manage payments, balances, recurring plans, products, and payment accounts. | EP-291, EP-292, EP-293, EP-294, EP-295, EP-296, EP-297 |
 
 #### 3.9.6. Payments
+
+
 
 The system SHALL support payments workflows within the Finance and Payment Management feature area.
 
@@ -666,6 +891,8 @@ The system SHALL support payments workflows within the Finance and Payment Manag
 
 #### 3.9.7. Products
 
+
+
 The system SHALL support products workflows within the Finance and Payment Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -673,6 +900,8 @@ The system SHALL support products workflows within the Finance and Payment Manag
 | FR-117. | The system SHALL allow authorized finance users to review payment receipts, payment details, payment methods, refund eligibility, terminals, logs, and payment history so that organisations can manage payments, balances, recurring plans, products, and payment accounts. | EP-327 |
 
 #### 3.9.8. Subscriptions
+
+
 
 The system SHALL support subscriptions workflows within the Finance and Payment Management feature area.
 
@@ -684,9 +913,13 @@ The system SHALL support subscriptions workflows within the Finance and Payment 
 
 ### 3.10. Mobile Application Services
 
+
+
 Business scope: mobile-focused experiences for clubs, events, classes, content, settings, MFA, bookings, and attendance.
 
 #### 3.10.1. Classes
+
+
 
 The system SHALL support classes workflows within the Mobile Application Services feature area.
 
@@ -702,6 +935,8 @@ The system SHALL support classes workflows within the Mobile Application Service
 
 #### 3.10.2. Clubs
 
+
+
 The system SHALL support clubs workflows within the Mobile Application Services feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -710,6 +945,8 @@ The system SHALL support clubs workflows within the Mobile Application Services 
 | FR-129. | The system SHALL allow authorized users to search, filter, page, and review clubs records so that mobile users can complete operational club, event, class, attendance, and security workflows. | EP-383, EP-386 |
 
 #### 3.10.3. Events
+
+
 
 The system SHALL support events workflows within the Mobile Application Services feature area.
 
@@ -723,6 +960,8 @@ The system SHALL support events workflows within the Mobile Application Services
 
 #### 3.10.4. General Settings
 
+
+
 The system SHALL support general settings workflows within the Mobile Application Services feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -732,6 +971,8 @@ The system SHALL support general settings workflows within the Mobile Applicatio
 
 #### 3.10.5. Multi-Factor Authentication
 
+
+
 The system SHALL support multi-factor authentication workflows within the Mobile Application Services feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -739,6 +980,8 @@ The system SHALL support multi-factor authentication workflows within the Mobile
 | FR-137. | The system SHALL support mobile multi-factor and two-factor authentication setup, verification, one-time-password handling, and status management so that mobile users can complete operational club, event, class, attendance, and security workflows. | EP-406, EP-407, EP-408, EP-409, EP-410, EP-411, EP-412, EP-413, EP-414, EP-415, EP-416, EP-417, EP-418, EP-419, EP-420 |
 
 #### 3.10.6. Two-Factor Authentication
+
+
 
 The system SHALL support two-factor authentication workflows within the Mobile Application Services feature area.
 
@@ -748,9 +991,13 @@ The system SHALL support two-factor authentication workflows within the Mobile A
 
 ### 3.11. Results and Competition Management
 
+
+
 Business scope: sports results, event results, competition data, rankings, result uploads, validation, and result-file lifecycle management.
 
 #### 3.11.1. Events
+
+
 
 The system SHALL support events workflows within the Results and Competition Management feature area.
 
@@ -766,6 +1013,8 @@ The system SHALL support events workflows within the Results and Competition Man
 
 #### 3.11.2. Results
 
+
+
 The system SHALL support results workflows within the Results and Competition Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -780,6 +1029,8 @@ The system SHALL support results workflows within the Results and Competition Ma
 
 #### 3.11.3. Sports Results
 
+
+
 The system SHALL support sports results workflows within the Results and Competition Management feature area.
 
 | ID | Requirement | Endpoint Trace IDs |
@@ -791,6 +1042,8 @@ The system SHALL support sports results workflows within the Results and Competi
 | FR-157. | The system SHALL allow authorized users to search, filter, page, and review sports results records so that sports administrators and members can manage result data, rankings, competitions, and validation workflows. | EP-486 |
 
 #### 3.11.4. Upload Result
+
+
 
 The system SHALL support upload result workflows within the Results and Competition Management feature area.
 

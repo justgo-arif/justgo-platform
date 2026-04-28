@@ -1,263 +1,351 @@
-import os
+from __future__ import annotations
+
 import re
+from dataclasses import dataclass, field
+from pathlib import Path
 
-base = r"d:/Workspace/personal/srs-generator/justgo-platform/docs/SRS"
-os.makedirs(base, exist_ok=True)
 
-data_sections = {
-    "3.1": {"name": "User Management and Authentication", "scope": "identity, login, tenant resolution, authorization, MFA, lookup data, shared notes, attachments, and user/security administration", "fr_range": "FR-01 to FR-80"},
-    "3.2": {"name": "Member Profile Management", "scope": "member profile, family, emergency contacts, preferences, notes, and member self-service profile workflows", "fr_range": "FR-81 to FR-120"},
-    "3.3": {"name": "Organisation and Club Management", "scope": "clubs, organisation hierarchy, member organisation relationships, join/leave/transfer workflows, and primary club management", "fr_range": "FR-121 to FR-129"},
-    "3.4": {"name": "Membership Management", "scope": "membership plans, licenses, family membership information, member entitlements, and downloadable membership artifacts", "fr_range": "FR-130 to FR-142"},
-    "3.5": {"name": "Booking Management", "scope": "class, course, session, attendee, occurrence, eligibility, attendance, and profile booking operations", "fr_range": "FR-143 to FR-175"},
-    "3.6": {"name": "Asset Management", "scope": "asset registers, asset categories, licenses, transfers, inspections, workflow status, and operational asset administration", "fr_range": "FR-176 to FR-250"},
-    "3.7": {"name": "Credential Management", "scope": "member credentials, credential templates, issuance, approvals, and credential-related member data", "fr_range": "FR-251 to FR-252"},
-    "3.8": {"name": "Field and Preference Management", "scope": "custom extension fields, field sets, schemas, entity-specific metadata, and configurable data capture", "fr_range": "FR-253 to FR-270"},
-    "3.9": {"name": "Finance and Payment Management", "scope": "payments, balances, subscriptions, installments, payment accounts, products, refunds, and finance grid views", "fr_range": "FR-271 to FR-335"},
-    "3.10": {"name": "Mobile Application Services", "scope": "mobile-focused experiences for clubs, events, classes, content, settings, MFA, bookings, and attendance", "fr_range": "FR-336 to FR-435"},
-    "3.11": {"name": "Results and Competition Management", "scope": "sports results, event results, competition data, rankings, result uploads, validation, and result-file lifecycle management", "fr_range": "FR-436 to FR-502"},
-}
+ROOT = Path(__file__).resolve().parents[1]
+DOCS = ROOT / "docs"
+SRS_PATH = DOCS / "justgo-platform-software-requirements-specification.md"
+INDEX_PATH = DOCS / "justgo-platform-srs-obsidian-index.md"
+OUTPUT_DIR = DOCS / "SRS"
+SOURCE_NOTE = "justgo-platform-software-requirements-specification"
 
-subsections = [
-    ("3.1","3.1.1","Authorization","FR-01","FR-04"),
-    ("3.1","3.1.2","Accounts","FR-05","FR-16"),
-    ("3.1","3.1.3","Cache Invalidation","FR-17","FR-22"),
-    ("3.1","3.1.4","Files","FR-23","FR-36"),
-    ("3.1","3.1.5","Lookup","FR-37","FR-41"),
-    ("3.1","3.1.6","Multi-Factor Authentication","FR-42","FR-56"),
-    ("3.1","3.1.7","Notes","FR-57","FR-62"),
-    ("3.1","3.1.8","System Settings","FR-63","FR-63"),
-    ("3.1","3.1.9","Tenants","FR-64","FR-71"),
-    ("3.1","3.1.10","User Interface Permissions","FR-72","FR-74"),
-    ("3.1","3.1.11","Users","FR-75","FR-80"),
-    ("3.2","3.2.1","Address Pickers","FR-81","FR-81"),
-    ("3.2","3.2.2","Member Basic Details","FR-82","FR-86"),
-    ("3.2","3.2.3","Member Family","FR-87","FR-95"),
-    ("3.2","3.2.4","Member Notes","FR-96","FR-99"),
-    ("3.2","3.2.5","Members","FR-100","FR-108"),
-    ("3.2","3.2.6","Preferences","FR-109","FR-114"),
-    ("3.2","3.2.7","User Emergency Contacts","FR-115","FR-120"),
-    ("3.3","3.3.1","Organisations","FR-121","FR-129"),
-    ("3.4","3.4.1","Memberships","FR-130","FR-136"),
-    ("3.4","3.4.2","Memberships Purchase","FR-137","FR-142"),
-    ("3.5","3.5.1","Booking Catalog","FR-143","FR-148"),
-    ("3.5","3.5.2","Booking Class","FR-149","FR-159"),
-    ("3.5","3.5.3","Booking Pricing Chart Discount","FR-160","FR-165"),
-    ("3.5","3.5.4","Booking Transfer Request","FR-166","FR-166"),
-    ("3.5","3.5.5","Class Management","FR-167","FR-168"),
-    ("3.5","3.5.6","Class Term","FR-169","FR-170"),
-    ("3.5","3.5.7","Profile Class Booking","FR-171","FR-172"),
-    ("3.5","3.5.8","Profile Course Booking","FR-173","FR-175"),
-    ("3.6","3.6.1","Asset Audit","FR-176","FR-176"),
-    ("3.6","3.6.2","Asset Categories","FR-177","FR-177"),
-    ("3.6","3.6.3","Asset Checkout","FR-178","FR-179"),
-    ("3.6","3.6.4","Asset Credentials","FR-180","FR-185"),
-    ("3.6","3.6.5","Asset Leases","FR-186","FR-195"),
-    ("3.6","3.6.6","Asset Licenses","FR-196","FR-209"),
-    ("3.6","3.6.7","Asset Metadata","FR-210","FR-220"),
-    ("3.6","3.6.8","Asset Ownership Transfers","FR-221","FR-227"),
-    ("3.6","3.6.9","Asset Registers","FR-228","FR-240"),
-    ("3.6","3.6.10","Asset Reports","FR-241","FR-242"),
-    ("3.6","3.6.11","Asset Types","FR-243","FR-244"),
-    ("3.6","3.6.12","Clubs","FR-245","FR-249"),
-    ("3.6","3.6.13","Workflows","FR-250","FR-250"),
-    ("3.7","3.7.1","Credentials","FR-251","FR-252"),
-    ("3.8","3.8.1","Entity Extensions","FR-253","FR-270"),
-    ("3.9","3.9.1","Balances","FR-271","FR-272"),
-    ("3.9","3.9.2","Finance Grid View","FR-273","FR-278"),
-    ("3.9","3.9.3","Installments","FR-279","FR-287"),
-    ("3.9","3.9.4","Payment Account","FR-288","FR-290"),
-    ("3.9","3.9.5","Payment Console","FR-291","FR-297"),
-    ("3.9","3.9.6","Payments","FR-298","FR-326"),
-    ("3.9","3.9.7","Products","FR-327","FR-327"),
-    ("3.9","3.9.8","Subscriptions","FR-328","FR-335"),
-    ("3.10","3.10.1","Classes","FR-336","FR-382"),
-    ("3.10","3.10.2","Clubs","FR-383","FR-386"),
-    ("3.10","3.10.3","Events","FR-387","FR-399"),
-    ("3.10","3.10.4","General Settings","FR-400","FR-405"),
-    ("3.10","3.10.5","Multi-Factor Authentication","FR-406","FR-420"),
-    ("3.10","3.10.6","Two-Factor Authentication","FR-421","FR-435"),
-    ("3.11","3.11.1","Events","FR-436","FR-458"),
-    ("3.11","3.11.2","Results","FR-459","FR-478"),
-    ("3.11","3.11.3","Sports Results","FR-479","FR-487"),
-    ("3.11","3.11.4","Upload Result","FR-488","FR-502"),
-]
+HEADING_RE = re.compile(r"^(#{2,4})\s+(.+?)\s*$")
+FR_RE = re.compile(r"^\|\s*(FR-(\d{3}))\.\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|")
+MAP_LINK_RE = re.compile(r"^\[Obsidian map: \[\[[^\]]+\]\]\]\s*$")
 
-# Parse SRS for FR texts
-srs_path = r"d:/Workspace/personal/srs-generator/justgo-platform/docs/justgo-platform-software-requirements-specification.md"
-with open(srs_path, 'r', encoding='utf-8') as f:
-    srs_text = f.read()
 
-fr_pattern = re.compile(r'\|\s*FR-(\d+)\.\s*\|\s*(.+?)\s*\|', re.MULTILINE)
-fr_entries = {}
-for m in fr_pattern.finditer(srs_text):
-    fr_num = int(m.group(1))
-    fr_text = m.group(2).strip()
-    fr_entries[fr_num] = fr_text
+@dataclass
+class Requirement:
+    id: str
+    number: int
+    text: str
+    endpoints: str
+    subsection: "Node"
 
-print(f"Parsed {len(fr_entries)} FR entries")
 
-# Build FR -> subsection mapping
-fr_to_sub = {}
-for (sec, subsec, subname, fr_start, fr_end) in subsections:
-    s_num = int(fr_start.replace("FR-",""))
-    e_num = int(fr_end.replace("FR-",""))
-    for n in range(s_num, e_num+1):
-        fr_to_sub[n] = (sec, subsec, subname)
+@dataclass
+class Node:
+    title: str
+    level: int
+    filename: str
+    parent: "Node | None" = None
+    children: list["Node"] = field(default_factory=list)
+    requirements: list[Requirement] = field(default_factory=list)
 
-def subsec_slug(subsec_num, subname):
-    return f"{subsec_num}-{subname.replace(' ','-')}"
+    @property
+    def type(self) -> str:
+        if self.title == "Document Control":
+            return "document-control"
+        if self.title == "Glossary":
+            return "glossary"
+        if re.match(r"^3\.\d+\. ", self.title):
+            return "feature-area"
+        if re.match(r"^3\.\d+\.\d+\. ", self.title):
+            return "functional-topic"
+        if re.match(r"^\d+\. ", self.title):
+            return "section"
+        if re.match(r"^[A-Z]\.\d+\. ", self.title):
+            return "appendix-topic"
+        return "heading"
 
-def sec_slug(sec_num, sec_name):
-    return sec_num + "-" + sec_name.replace(' ','-').replace('/','-')
 
-# Write FR files
-files_written = 0
-for fr_num in range(1, 503):
-    if fr_num not in fr_entries:
-        print(f"WARNING: FR-{fr_num:03d} not in parsed entries")
-        continue
-    if fr_num not in fr_to_sub:
-        print(f"WARNING: FR-{fr_num:03d} not mapped to subsection")
-        continue
+def strip_generated_map_links(text: str) -> str:
+    lines = text.splitlines()
+    return "\n".join(line for line in lines if not MAP_LINK_RE.match(line)) + "\n"
 
-    fr_text = fr_entries[fr_num]
-    sec, subsec, subname = fr_to_sub[fr_num]
-    sec_name = data_sections[sec]["name"]
-    sec_s = sec_slug(sec, sec_name)
-    sub_s = subsec_slug(subsec, subname)
-    fr_id = f"FR-{fr_num:03d}"
 
-    content = f"""---
-id: {fr_id}
-type: functional-requirement
-section: "{subsec}"
-subsection: "{subname}"
-feature: "{sec_name}"
-tags:
-  - srs
-  - functional-requirement
----
+def slugify(title: str) -> str:
+    value = title.strip()
+    value = re.sub(r"^(\d+(?:\.\d+)*)\.\s+", r"\1-", value)
+    value = re.sub(r"^([A-Z]\.\d+)\.\s+", r"\1-", value)
+    value = re.sub(r"[^A-Za-z0-9.-]+", "-", value)
+    value = re.sub(r"-+", "-", value).strip("-")
+    return value or "Untitled"
 
-# {fr_id}
 
-**Feature Area:** [[{sec_s}|{sec}. {sec_name}]]
-**Subsection:** [[{sub_s}|{subsec}. {subname}]]
+def wiki(filename: str, alias: str | None = None) -> str:
+    stem = filename[:-3] if filename.endswith(".md") else filename
+    return f"[[{stem}|{alias}]]" if alias else f"[[{stem}]]"
 
-## Requirement
 
-{fr_text}
-"""
-    with open(os.path.join(base, f"{fr_id}.md"), 'w', encoding='utf-8') as f:
-        f.write(content)
-    files_written += 1
+def plain_parent_title(node: Node) -> str:
+    return node.parent.title if node.parent else "None"
 
-print(f"Written {files_written} FR files")
 
-# Write subsection files
-for (sec, subsec, subname, fr_start, fr_end) in subsections:
-    sec_name = data_sections[sec]["name"]
-    sec_s = sec_slug(sec, sec_name)
-    sub_s = subsec_slug(subsec, subname)
-    s_num = int(fr_start.replace("FR-",""))
-    e_num = int(fr_end.replace("FR-",""))
-    fr_links = "\n".join([f"- [[FR-{n:03d}]]" for n in range(s_num, e_num+1)])
-    content = f"""---
-id: "{subsec}"
-type: subsection
-section: "{sec}"
-feature: "{sec_name}"
-tags:
-  - srs
-  - subsection
----
+def parse_srs(text: str) -> tuple[list[Node], list[Requirement]]:
+    nodes: list[Node] = []
+    requirements: list[Requirement] = []
+    stack: dict[int, Node] = {}
+    filenames: set[str] = set()
+    current_subsection: Node | None = None
 
-# {subsec}. {subname}
+    for line in text.splitlines():
+        heading = HEADING_RE.match(line)
+        if heading:
+            level = len(heading.group(1))
+            title = heading.group(2).strip()
+            if title == "Table of Contents":
+                current_subsection = None
+                continue
 
-**Feature Area:** [[{sec_s}|{sec}. {sec_name}]]
+            base_filename = slugify(title)
+            filename = f"{base_filename}.md"
+            suffix = 2
+            while filename in filenames:
+                filename = f"{base_filename}-{suffix}.md"
+                suffix += 1
+            filenames.add(filename)
 
-Range: {fr_start} to {fr_end}
+            parent = None
+            for parent_level in range(level - 1, 1, -1):
+                if parent_level in stack:
+                    parent = stack[parent_level]
+                    break
 
-## Functional Requirements
+            node = Node(title=title, level=level, filename=filename, parent=parent)
+            if parent:
+                parent.children.append(node)
+            nodes.append(node)
+            stack[level] = node
+            for stale_level in list(stack):
+                if stale_level > level:
+                    del stack[stale_level]
 
-{fr_links}
-"""
-    with open(os.path.join(base, f"{sub_s}.md"), 'w', encoding='utf-8') as f:
-        f.write(content)
+            current_subsection = node if re.match(r"^3\.\d+\.\d+\. ", title) else None
+            continue
 
-print(f"Written {len(subsections)} subsection files")
+        fr = FR_RE.match(line)
+        if fr and current_subsection:
+            req = Requirement(
+                id=fr.group(1),
+                number=int(fr.group(2)),
+                text=fr.group(3).strip(),
+                endpoints=fr.group(4).strip(),
+                subsection=current_subsection,
+            )
+            requirements.append(req)
+            current_subsection.requirements.append(req)
 
-# Write section files
-for sec_num, sec_data in data_sections.items():
-    sec_name = sec_data["name"]
-    sec_s = sec_slug(sec_num, sec_name)
-    subs = [(s,ss,sn,fs,fe) for (s,ss,sn,fs,fe) in subsections if s == sec_num]
-    sub_links = "\n".join([f"- [[{subsec_slug(ss,sn)}|{ss}. {sn}]] ({fs} to {fe})" for (s,ss,sn,fs,fe) in subs])
-    content = f"""---
-id: "{sec_num}"
-type: section
-feature: "{sec_name}"
-fr_range: "{sec_data['fr_range']}"
-tags:
-  - srs
-  - section
----
+    return nodes, requirements
 
-# {sec_num}. {sec_name}
 
-**Source:** [[justgo-platform-software-requirements-specification|SRS Document]]
+def fr_range(requirements: list[Requirement]) -> str:
+    if not requirements:
+        return "None"
+    ordered = sorted(requirements, key=lambda item: item.number)
+    return f"{ordered[0].id} to {ordered[-1].id}"
 
-**Business Scope:** {sec_data['scope']}
 
-**FR Range:** {sec_data['fr_range']}
+def descendant_requirements(node: Node) -> list[Requirement]:
+    found = list(node.requirements)
+    for child in node.children:
+        found.extend(descendant_requirements(child))
+    return sorted(found, key=lambda item: item.number)
 
-## Subsections
 
-{sub_links}
-"""
-    with open(os.path.join(base, f"{sec_s}.md"), 'w', encoding='utf-8') as f:
-        f.write(content)
+def ancestors(node: Node) -> list[Node]:
+    result: list[Node] = []
+    current = node.parent
+    while current:
+        result.append(current)
+        current = current.parent
+    return list(reversed(result))
 
-print(f"Written {len(data_sections)} section files")
 
-# Write MOC
-moc_lines = []
-for sec_num, sec_data in data_sections.items():
-    sec_name = sec_data["name"]
-    sec_s = sec_slug(sec_num, sec_name)
-    moc_lines.append(f"\n### [[{sec_s}|{sec_num}. {sec_name}]] — {sec_data['fr_range']}\n")
-    subs = [(s,ss,sn,fs,fe) for (s,ss,sn,fs,fe) in subsections if s == sec_num]
-    for (s,ss,sn,fs,fe) in subs:
-        sub_s = subsec_slug(ss,sn)
-        moc_lines.append(f"- [[{sub_s}|{ss}. {sn}]] ({fs}–{fe})\n")
+def write_file(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content.rstrip() + "\n", encoding="utf-8")
 
-moc_content = """---
-title: JustGo Platform SRS — Map of Content
-tags:
-  - srs
-  - moc
-  - justgo
----
 
-# JustGo Platform SRS — Map of Content
+def write_node(node: Node) -> None:
+    child_links = "\n".join(f"- {wiki(child.filename, child.title)}" for child in node.children)
+    reqs = node.requirements
+    req_links = "\n".join(f"- [[{req.id}]]" for req in reqs)
+    desc_reqs = descendant_requirements(node)
+    breadcrumb = " > ".join(item.title for item in ancestors(node) + [node])
 
-**Source:** [[justgo-platform-software-requirements-specification|Full SRS Document]]
+    sections = [
+        "---",
+        f'title: "{node.title}"',
+        f'type: "{node.type}"',
+        f'source: "{SOURCE_NOTE}"',
+        f'source_heading: "{node.title}"',
+        f'parent: "{plain_parent_title(node)}"',
+        "tags:",
+        "  - srs",
+        f"  - {node.type}",
+        "---",
+        "",
+        f"# {node.title}",
+        "",
+        f"Source heading: {node.title}",
+    ]
+    if node.parent:
+        sections.extend(["", f"Parent: {node.parent.title}"])
+    sections.extend(["", f"Path: {breadcrumb}"])
+    sections.extend(["", f"Functional Requirement Range: {fr_range(desc_reqs)}"])
 
-502 functional requirements across 11 feature areas.
+    if child_links:
+        sections.extend(["", "## Child Notes", "", child_links])
+    if req_links:
+        sections.extend(["", "## Functional Requirement Leaves", "", req_links])
+    if not child_links and not req_links:
+        sections.extend(["", "## Notes", "", "This SRS heading has no generated child notes."])
 
-## Feature Areas
+    write_file(OUTPUT_DIR / node.filename, "\n".join(sections))
 
-""" + "".join(moc_lines) + """
-## Cross-Cutting Themes
 
-- Access control and tenant isolation appear throughout protected workflows.
-- Most feature areas support create, view, update, remove, search/filter, validation, status change, upload/download, or export.
-- Data integrity emphasized through validation outcomes, traceability, authorization checks, and downstream workflow availability.
-- Mobile services mirror core platform capabilities for classes, events, clubs, security, and operational workflows.
-"""
-with open(os.path.join(base, "MOC.md"), 'w', encoding='utf-8') as f:
-    f.write(moc_content)
+def write_requirement(req: Requirement) -> None:
+    subsection = req.subsection
+    feature = subsection.parent
+    content = "\n".join(
+        [
+            "---",
+            f"id: {req.id}",
+            'type: "functional-requirement"',
+            f'subsection: "{subsection.title}"',
+            f'feature: "{feature.title if feature else ""}"',
+            f'endpoint_trace_ids: "{req.endpoints}"',
+            "tags:",
+            "  - srs",
+            "  - functional-requirement",
+            "---",
+            "",
+            f"# {req.id}",
+            "",
+            f"Feature: {feature.title if feature else ''}",
+            f"Subsection: {subsection.title}",
+            f"Source heading: {subsection.title}",
+            "",
+            "## Requirement",
+            "",
+            req.text,
+            "",
+            "## Endpoint Trace IDs",
+            "",
+            req.endpoints,
+        ]
+    )
+    write_file(OUTPUT_DIR / f"{req.id}.md", content)
 
-print("Written MOC.md")
-total = len(os.listdir(base))
-print(f"Total files in SRS/: {total}")
+
+def write_moc(nodes: list[Node], requirements: list[Requirement]) -> None:
+    roots = [node for node in nodes if node.parent is None]
+
+    feature_areas = [
+        node
+        for node in nodes
+        if node.level == 3 and re.match(r"^3\.\d+\. ", node.title)
+    ]
+
+    root_lines = [f"- {wiki(root.filename, root.title)}" for root in roots]
+
+    content = "\n".join(
+        [
+            "---",
+            'title: "JustGo Platform SRS Map of Content"',
+            'type: "moc"',
+            "tags:",
+            "  - srs",
+            "  - moc",
+            "  - justgo",
+            "---",
+            "",
+            "# JustGo Platform SRS Map of Content",
+            "",
+            f"**Source:** [[{SOURCE_NOTE}|Full SRS Document]]",
+            f"**Index:** [[justgo-platform-srs-obsidian-index|SRS Obsidian Index]]",
+            "",
+            f"{len(requirements)} functional requirements across {len(feature_areas)} feature areas.",
+            "",
+            "## Root Sections",
+            "",
+            "\n".join(root_lines),
+        ]
+    )
+    write_file(OUTPUT_DIR / "MOC.md", content)
+
+
+def update_index(nodes: list[Node]) -> None:
+    roots = [node for node in nodes if node.parent is None]
+    root_lines = [f"- {wiki(root.filename, root.title)}" for root in roots]
+
+    lines = [
+        "# JustGo Platform SRS Index",
+        "",
+        "- [[MOC|SRS Map of Content]]",
+        "- [[justgo-platform-software-requirements-specification|Full SRS Document]]",
+        "",
+        "## Root Sections",
+        "",
+        *root_lines,
+    ]
+    write_file(INDEX_PATH, "\n".join(lines))
+
+
+def update_srs_map_links(text: str, nodes: list[Node]) -> str:
+    output: list[str] = []
+    for line in strip_generated_map_links(text).splitlines():
+        output.append(line)
+        heading = HEADING_RE.match(line)
+        if not heading:
+            continue
+        title = heading.group(2).strip()
+        if title == "3. System Features and Functional Requirements":
+            output.append("")
+            output.append("[Obsidian SRS Map: [[MOC|Open layered map]]]")
+    return "\n".join(output) + "\n"
+
+
+def validate(nodes: list[Node], requirements: list[Requirement]) -> None:
+    feature_areas = [
+        node
+        for node in nodes
+        if node.level == 3 and re.match(r"^3\.\d+\. ", node.title)
+    ]
+    functional_subsections = [
+        node
+        for node in nodes
+        if node.level == 4 and re.match(r"^3\.\d+\.\d+\. ", node.title)
+    ]
+    ids = [req.id for req in requirements]
+    if len(ids) != len(set(ids)):
+        raise ValueError("Duplicate FR IDs detected")
+    expected = [f"FR-{number:03d}" for number in range(1, len(requirements) + 1)]
+    if ids != expected:
+        raise ValueError(f"FR IDs are not contiguous from FR-001 to FR-{len(requirements):03d}")
+    unmapped = [req.id for req in requirements if not req.subsection]
+    if unmapped:
+        raise ValueError(f"Unmapped requirements: {', '.join(unmapped)}")
+
+    print(f"Feature areas: {len(feature_areas)}")
+    print(f"Functional subsections: {len(functional_subsections)}")
+    print(f"FR leaf files: {len(requirements)}")
+
+
+def main() -> None:
+    original_text = SRS_PATH.read_text(encoding="utf-8")
+    clean_text = strip_generated_map_links(original_text)
+    nodes, requirements = parse_srs(clean_text)
+    validate(nodes, requirements)
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    for node in nodes:
+        write_node(node)
+    for req in requirements:
+        write_requirement(req)
+    write_moc(nodes, requirements)
+    update_index(nodes)
+    SRS_PATH.write_text(update_srs_map_links(original_text, nodes), encoding="utf-8")
+
+    total_files = len(list(OUTPUT_DIR.glob("*.md")))
+    print(f"Heading note files: {len(nodes)}")
+    print(f"Total files in docs/SRS: {total_files}")
+
+
+if __name__ == "__main__":
+    main()
