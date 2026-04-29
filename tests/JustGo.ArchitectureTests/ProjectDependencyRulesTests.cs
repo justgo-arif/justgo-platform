@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using System.Text.RegularExpressions;
 
 namespace JustGo.ArchitectureTests;
 
@@ -54,6 +55,64 @@ public class ProjectDependencyRulesTests
             violations));
     }
 
+    [Fact]
+    public void Controller_success_responses_should_use_typed_api_response_data()
+    {
+        var violations = Directory
+            .EnumerateFiles(ModulesRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(path => path.Contains(Path.DirectorySeparatorChar + "Controllers" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            .SelectMany(GetUntypedSuccessApiResponseUsages)
+            .OrderBy(violation => violation)
+            .ToList();
+
+        Assert.True(violations.Count == 0, BuildFailureMessage(
+            "Controller success responses must use concrete ApiResponse<TData, TPermissions> data types instead of ApiResponse<object, object>.",
+            violations));
+    }
+
+    [Fact]
+    public void Controller_actions_should_declare_openapi_response_types()
+    {
+        var violations = Directory
+            .EnumerateFiles(ModulesRoot, "*Controller.cs", SearchOption.AllDirectories)
+            .SelectMany(GetActionsMissingProducesResponseType)
+            .OrderBy(violation => violation)
+            .ToList();
+
+        Assert.True(violations.Count == 0, BuildFailureMessage(
+            "Controller actions must declare [ProducesResponseType] so OpenAPI documents stable response schemas.",
+            violations));
+    }
+
+    [Fact]
+    public void Controller_success_responses_should_not_return_anonymous_objects()
+    {
+        var violations = Directory
+            .EnumerateFiles(ModulesRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(path => path.Contains(Path.DirectorySeparatorChar + "Controllers" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            .SelectMany(GetAnonymousSuccessResponseUsages)
+            .OrderBy(violation => violation)
+            .ToList();
+
+        Assert.True(violations.Count == 0, BuildFailureMessage(
+            "Controller success responses must return named DTOs instead of anonymous objects so SDK generators can create stable models.",
+            violations));
+    }
+
+    [Fact]
+    public void Controller_route_parameters_should_use_explicit_constraints()
+    {
+        var violations = Directory
+            .EnumerateFiles(ModulesRoot, "*Controller.cs", SearchOption.AllDirectories)
+            .SelectMany(GetUnconstrainedRouteParameters)
+            .OrderBy(violation => violation)
+            .ToList();
+
+        Assert.True(violations.Count == 0, BuildFailureMessage(
+            "Controller route parameters must use explicit constraints, for example {id:guid:required}, so OpenAPI describes routes precisely.",
+            violations));
+    }
+
     private static IReadOnlyList<ProjectDefinition> GetModuleProjects(string searchPattern)
     {
         return Directory
@@ -71,6 +130,131 @@ public class ProjectDependencyRulesTests
         }
 
         return header + Environment.NewLine + string.Join(Environment.NewLine, violations);
+    }
+
+    private static IEnumerable<string> GetUntypedSuccessApiResponseUsages(string filePath)
+    {
+        return File.ReadLines(filePath)
+            .Select((line, index) => new { Line = line, LineNumber = index + 1 })
+            .Where(sourceLine => IsUntypedSuccessApiResponseUsage(sourceLine.Line))
+            .Select(sourceLine => $"{Path.GetRelativePath(RepositoryRoot, filePath)}:{sourceLine.LineNumber}");
+    }
+
+    private static bool IsUntypedSuccessApiResponseUsage(string line)
+    {
+        var normalizedLine = line.Replace(" ", string.Empty, StringComparison.Ordinal)
+            .Replace("\t", string.Empty, StringComparison.Ordinal);
+
+        return normalizedLine.Contains("Ok(newApiResponse<object,object>", StringComparison.Ordinal)
+            || normalizedLine.Contains("Created(newApiResponse<object,object>", StringComparison.Ordinal)
+            || normalizedLine.Contains("Accepted(newApiResponse<object,object>", StringComparison.Ordinal);
+    }
+
+    private static IEnumerable<string> GetActionsMissingProducesResponseType(string filePath)
+    {
+        var lines = File.ReadAllLines(filePath);
+
+        for (var index = 0; index < lines.Length; index++)
+        {
+            if (!IsPublicActionMethod(lines[index]))
+            {
+                continue;
+            }
+
+            var attributeLines = GetMethodAttributeLines(lines, index);
+
+            if (attributeLines.Any(IsHttpMethodAttribute) && !attributeLines.Any(IsProducesResponseTypeAttribute))
+            {
+                yield return $"{Path.GetRelativePath(RepositoryRoot, filePath)}:{index + 1}";
+            }
+        }
+    }
+
+    private static IEnumerable<string> GetAnonymousSuccessResponseUsages(string filePath)
+    {
+        return File.ReadLines(filePath)
+            .Select((line, index) => new { Line = line, LineNumber = index + 1 })
+            .Where(sourceLine => IsAnonymousSuccessResponseUsage(sourceLine.Line))
+            .Select(sourceLine => $"{Path.GetRelativePath(RepositoryRoot, filePath)}:{sourceLine.LineNumber}");
+    }
+
+    private static IEnumerable<string> GetUnconstrainedRouteParameters(string filePath)
+    {
+        return File.ReadLines(filePath)
+            .Select((line, index) => new { Line = line, LineNumber = index + 1 })
+            .SelectMany(sourceLine => GetUnconstrainedRouteParametersFromLine(sourceLine.Line)
+                .Select(parameter => $"{Path.GetRelativePath(RepositoryRoot, filePath)}:{sourceLine.LineNumber} ({parameter})"));
+    }
+
+    private static bool IsPublicActionMethod(string line)
+    {
+        var trimmedLine = line.TrimStart();
+
+        return trimmedLine.StartsWith("public ", StringComparison.Ordinal)
+            && trimmedLine.Contains('(')
+            && trimmedLine.Contains(')')
+            && !trimmedLine.Contains(" class ", StringComparison.Ordinal)
+            && !trimmedLine.Contains(" record ", StringComparison.Ordinal);
+    }
+
+    private static IReadOnlyList<string> GetMethodAttributeLines(IReadOnlyList<string> lines, int methodLineIndex)
+    {
+        var attributeLines = new List<string>();
+
+        for (var index = methodLineIndex - 1; index >= 0; index--)
+        {
+            var trimmedLine = lines[index].Trim();
+
+            if (trimmedLine.Length == 0)
+            {
+                continue;
+            }
+
+            if (!trimmedLine.StartsWith("[", StringComparison.Ordinal))
+            {
+                break;
+            }
+
+            attributeLines.Add(trimmedLine);
+        }
+
+        return attributeLines;
+    }
+
+    private static bool IsHttpMethodAttribute(string line)
+    {
+        return Regex.IsMatch(line, @"^\[Http(Get|Post|Put|Delete|Patch|Head|Options)(\(|\])", RegexOptions.CultureInvariant);
+    }
+
+    private static bool IsProducesResponseTypeAttribute(string line)
+    {
+        return line.StartsWith("[ProducesResponseType", StringComparison.Ordinal);
+    }
+
+    private static bool IsAnonymousSuccessResponseUsage(string line)
+    {
+        var normalizedLine = line.Replace(" ", string.Empty, StringComparison.Ordinal)
+            .Replace("\t", string.Empty, StringComparison.Ordinal);
+
+        return normalizedLine.Contains("Ok(new{", StringComparison.Ordinal)
+            || normalizedLine.Contains("Created(new{", StringComparison.Ordinal)
+            || normalizedLine.Contains("Accepted(new{", StringComparison.Ordinal);
+    }
+
+    private static IEnumerable<string> GetUnconstrainedRouteParametersFromLine(string line)
+    {
+        if (!IsHttpMethodAttribute(line.Trim()))
+        {
+            yield break;
+        }
+
+        foreach (Match match in Regex.Matches(line, @"\{(?<parameter>[^}:]+)(?<constraint>:[^}]+)?\}", RegexOptions.CultureInvariant))
+        {
+            if (!match.Groups["constraint"].Success)
+            {
+                yield return match.Groups["parameter"].Value;
+            }
+        }
     }
 
     private static string FindRepositoryRoot()
