@@ -1,0 +1,4 @@
+root = true
+
+[*.cs]
+dotnet_diagnostic.JG0001.severity = error
