@@ -69,10 +69,13 @@ builder.Services.AddResponseCompression(options =>
 
 builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 {
+    var seqServerUrl = context.Configuration["Serilog:SeqServerUrl"] ?? "http://localhost:5341";
+
     loggerConfiguration
         .MinimumLevel.Information()
         .Enrich.FromLogContext()
         .WriteTo.Console()
+        .WriteTo.Seq(seqServerUrl)
         //.WriteTo.AuditSink(services)
         .WriteTo.EventSink(services)
         .WriteTo.ExceptionSink(services);

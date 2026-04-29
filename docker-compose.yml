@@ -13,5 +13,17 @@ services:
     volumes:
       - sql_data:/var/opt/mssql
 
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    environment:
+      ACCEPT_EULA: "Y"
+    volumes:
+      - seq_data:/data
+
 volumes:
   sql_data:
+  seq_data:
