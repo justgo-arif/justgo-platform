@@ -1,0 +1,119 @@
+JUSTGO INFRASTRUCTURE REVIEW CHECKLIST
+
+CORE PRINCIPLE
+[ ] Infrastructure contains only technical implementation details
+[ ] No business policy or domain decision-making
+[ ] Must be replaceable without impacting Domain logic
+
+DEPENDENCY DIRECTION
+[ ] Infrastructure depends only on:
+    - Domain
+    - Application abstractions
+    - shared infrastructure packages
+    - third-party SDKs/libraries
+[ ] Domain does NOT depend on Infrastructure
+[ ] Application depends on abstractions, not concrete Infrastructure classes
+[ ] No direct Infrastructure injection into Application handlers
+
+WHAT BELONGS IN INFRASTRUCTURE
+[ ] Repository implementations
+[ ] SQL/Dapper/EF database access
+[ ] DbContext (if applicable)
+[ ] External API/service clients
+[ ] File/blob storage adapters
+[ ] Cache providers
+[ ] Authentication providers (technical)
+[ ] Message bus integrations
+[ ] Infrastructure configuration binding
+[ ] Serialization for external systems
+
+WHAT MUST NOT BE IN INFRASTRUCTURE
+[ ] Business rules
+[ ] Use case orchestration
+[ ] Command/Query handlers
+[ ] Validators
+[ ] API DTO contracts
+[ ] Controller/API logic
+[ ] Domain state transitions
+[ ] Authorization as business policy
+[ ] Workflow decisions
+
+CONTRACT IMPLEMENTATION
+[ ] Interfaces are defined in Application (or Domain if appropriate)
+[ ] Infrastructure implements those interfaces
+[ ] No primary abstraction defined only in Infrastructure
+[ ] Implementation is hidden behind DI
+
+PERSISTENCE
+[ ] Contains only data access logic
+[ ] Knows:
+    - tables
+    - stored procedures
+    - SQL dialect
+    - ORM details
+[ ] Does NOT contain business decisions
+[ ] Only loads/saves/maps data
+
+EXTERNAL SERVICES
+[ ] Wrapped behind application-facing interfaces
+[ ] No SDK types leak outside Infrastructure
+[ ] Responses mapped to DTOs or result objects
+[ ] No provider-specific types exposed to Application/Domain
+
+CONFIGURATION
+[ ] Uses strongly typed options (IOptions<T>)
+[ ] No scattered raw config key access
+[ ] Configuration centralized and injected
+
+ERROR HANDLING
+[ ] Provider exceptions translated to application-level failures
+[ ] No leaking of low-level SDK/database exceptions
+[ ] Errors are meaningful to the caller
+
+LOGGING
+[ ] Logs only safe diagnostic information
+[ ] Does NOT log:
+    - secrets
+    - tokens
+    - passwords
+    - connection strings
+    - sensitive payloads
+
+TRANSACTIONS
+[ ] May participate in transactions
+[ ] Does NOT control full business transaction flow
+[ ] No hidden commits for multi-step workflows
+[ ] Transaction boundaries owned by Application
+
+TESTABILITY
+[ ] Replaceable via interfaces
+[ ] No hard-coded/static dependencies
+[ ] External systems wrapped for mocking in tests
+
+ANTI-CORRUPTION LAYER (ACL)
+[ ] External models NEVER leak into Application/Domain
+[ ] Provider DTOs mapped to internal DTOs
+[ ] Handles:
+    - naming differences
+    - status/type mapping
+    - unit/currency/date normalization
+    - null/default handling
+    - error translation
+[ ] Protects Domain from external system changes
+
+COMMON SMELLS (FLAG STRONGLY)
+[ ] Business logic inside repositories/adapters
+[ ] Provider SDK types exposed outside Infrastructure
+[ ] SQL logic outside Infrastructure layer
+[ ] Handlers inside Infrastructure
+[ ] Validators inside Infrastructure
+[ ] Direct Infrastructure usage in Application handlers
+[ ] Raw config keys scattered across code
+[ ] Secrets logged
+[ ] External API calls directly from handlers
+[ ] Infrastructure depending on API layer
+[ ] Infrastructure shaping user-facing responses
+
+GUIDING RULE
+[ ] Infrastructure handles HOW to talk to external systems
+[ ] Domain/Application decide WHAT the business does

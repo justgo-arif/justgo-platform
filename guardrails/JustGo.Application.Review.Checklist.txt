@@ -1,0 +1,116 @@
+JUSTGO APPLICATION REVIEW CHECKLIST (CQRS + CLEAN ARCHITECTURE)
+
+CORE PRINCIPLE
+[ ] Review against standard practices first, repo conventions second
+[ ] Do NOT accept weak/legacy patterns as valid by default
+[ ] Flag risky or non-standard patterns even if already present
+
+NAMING CONVENTION
+[ ] Query follows: [Action]Query → [Action]QueryHandler
+[ ] Command follows: [Action]Command → [Action]CommandHandler
+[ ] Handler name matches request name exactly
+[ ] No shortened or mismatched handler names
+
+RETURN TYPES
+[ ] Handler returns a concrete DTO or Result<TDto>
+[ ] No use of:
+    - object
+    - dynamic
+    - Task<object>
+    - Result<object>
+    - anonymous objects
+[ ] Response DTO is explicitly defined and named
+
+CQRS BOUNDARY
+QUERY HANDLER
+[ ] Read-only (NO mutation)
+[ ] No insert/update/delete
+[ ] No audit writes or timestamp updates
+[ ] No side effects
+[ ] No write stored procedures
+[ ] Uses read models / read repositories only
+
+COMMAND HANDLER
+[ ] Responsible for all mutations
+[ ] Handles insert/update/delete/state changes
+[ ] Manages transactions and commits
+[ ] May read only for validation or execution
+
+HANDLER RESPONSIBILITY
+[ ] Acts as orchestrator only
+[ ] No large business logic inside handler
+[ ] No complex SQL construction inside handler
+[ ] No repeated mapping logic
+[ ] No API/HTTP concerns
+[ ] No mixed read/write responsibilities
+[ ] Move heavy logic to services/domain/helpers when needed
+
+VALIDATION
+[ ] Command has validator if business rules exist
+[ ] Query has validator if input affects:
+    - IDs
+    - dates
+    - pagination
+    - filtering/sorting
+    - SQL behavior
+[ ] Uses FluentValidation (not inline validation)
+
+SQL & PERSISTENCE
+[ ] SQL is fully parameterized
+[ ] No string interpolation with request values
+[ ] No unsafe dynamic SQL (e.g., IN clauses)
+[ ] Command type explicitly defined when executing SQL
+[ ] No write operations inside QueryHandler
+[ ] Stored procedures clearly read/write scoped
+
+ARCHITECTURE BOUNDARIES
+[ ] No direct dependency on sibling modules
+[ ] Uses MediatR or approved contracts for cross-module calls
+[ ] Domain layer is independent of Application/Infrastructure/API
+[ ] No DTO leakage into Domain
+
+TRANSACTIONS
+[ ] Multi-step writes wrapped in a transaction
+[ ] Single commit after all operations succeed
+[ ] No partial writes
+[ ] Transaction passed through all write operations
+[ ] Queries do NOT open transactions
+
+ERROR HANDLING
+[ ] No swallowed exceptions
+[ ] No returning null/default silently
+[ ] Uses explicit failure results or proper propagation
+[ ] Logging is meaningful (not debug-only)
+
+CANCELLATION
+[ ] CancellationToken accepted where applicable
+[ ] Passed to:
+    - repositories
+    - mediator calls
+    - services
+    - external dependencies
+
+REVIEW SEVERITY TAGS
+[ ] [Standard] → Violates Clean Architecture/CQRS
+[ ] [Repo Convention] → Naming/style inconsistency
+[ ] [Risk] → Maintainability/security concern
+[ ] [Legacy Tolerance] → Exists but should not be extended
+
+COMMON SMELLS (FLAG STRONGLY)
+[ ] IRequest<object> or Result<object>
+[ ] Task<object>
+[ ] Anonymous return types
+[ ] QueryHandler performing writes
+[ ] Query using write DB path
+[ ] Command missing transaction for multi-step writes
+[ ] Incorrect handler naming
+[ ] Missing validator for rule-based input
+[ ] SQL interpolation from request
+[ ] Swallowed exceptions
+[ ] Large “god” handler (SQL + logic + mapping + validation)
+[ ] Direct module-to-module dependency
+[ ] API/HTTP concerns inside Application layer
+
+GUIDING RULE
+[ ] Avoid anemic models gradually
+[ ] Each new rule should move toward stronger domain behavior

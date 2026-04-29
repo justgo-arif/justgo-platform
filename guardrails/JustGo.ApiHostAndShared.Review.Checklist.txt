@@ -1,0 +1,183 @@
+JUSTGO API HOST + SHARED LAYER REVIEW CHECKLIST
+
+========================
+API HOST LAYER
+========================
+
+CORE PRINCIPLE
+[ ] Host is composition root only
+[ ] Wires modules together; does NOT implement business behavior
+[ ] Contains only platform startup concerns
+
+ALLOWED RESPONSIBILITIES
+[ ] Application bootstrapping
+[ ] Dependency registration orchestration
+[ ] Middleware pipeline ordering
+[ ] Authentication/Authorization setup
+[ ] Swagger/OpenAPI setup
+[ ] API versioning setup
+[ ] CORS configuration
+[ ] Logging setup
+[ ] Health checks
+[ ] Global exception/error middleware
+[ ] Environment-specific configuration
+[ ] Module registration calls
+
+NO BUSINESS LOGIC
+[ ] No business rules in host
+[ ] No workflow logic
+[ ] No module-specific conditions (booking/auth/member/etc.)
+[ ] No endpoint/business logic in Program.cs
+
+NO MODULE COUPLING
+[ ] Host does NOT reference:
+    - module handlers
+    - repositories
+    - domain entities
+    - DTOs
+    - validators
+    - services
+    - SQL/stored procedures
+[ ] Host only knows module composition surface
+
+ALLOWED MODULE TOUCHPOINTS
+[ ] Uses only:
+    - Add[Module]Services()
+    - Use[Module]Middleware()
+    - Map[Module]Endpoints() (if applicable)
+[ ] No direct internal module wiring
+
+MIDDLEWARE PIPELINE
+[ ] Middleware chained via extension methods
+[ ] No inline module-specific logic in pipeline
+[ ] Middleware naming is explicit and module-aware
+
+ENDPOINTS
+[ ] No business endpoints defined in host
+[ ] Controllers live in module API projects
+
+COMMON HOST SMELLS (FLAG STRONGLY)
+[ ] Host registers module internals directly
+[ ] Host references Application/Domain/Infrastructure types
+[ ] Business endpoint defined in host
+[ ] Inline middleware with business logic
+[ ] Module-specific config scattered in host
+[ ] Host imports deep module namespaces instead of API surface
+
+
+========================
+SHARED LAYER (SHARED KERNEL + SHARED INFRA)
+========================
+
+CORE PRINCIPLE
+[ ] Shared code is generic, stable, and cross-cutting
+[ ] Does NOT contain module-specific business logic
+[ ] Reduces duplication without breaking module boundaries
+
+SHARED VS MODULE OWNERSHIP
+[ ] Code belongs in shared ONLY if:
+    - used by multiple modules
+    - meaning is identical across modules
+    - stable and unlikely to change frequently
+[ ] Otherwise keep it inside owning module
+
+SHARED KERNEL (LIGHTWEIGHT)
+[ ] Contains:
+    - common result types
+    - pagination models
+    - shared enums (platform-wide meaning)
+    - simple value objects
+    - common response contracts
+[ ] No business workflows or module-specific rules
+
+SHARED INFRASTRUCTURE
+[ ] Contains:
+    - authentication/JWT
+    - authorization (ABAC, policies)
+    - caching
+    - logging
+    - tenant context
+    - repository abstractions (generic only)
+    - file storage
+    - error handling
+    - mediator implementation
+    - background processing
+
+NO BUSINESS LEAKAGE
+[ ] No module-specific rules (Booking, Finance, Membership, etc.)
+[ ] No module-specific DTOs
+[ ] No domain entities from modules
+[ ] No module-specific SQL
+[ ] No workflow logic
+
+DEPENDENCY RULES
+[ ] Shared projects must NOT depend on modules
+[ ] Modules may depend on shared projects
+[ ] No circular dependencies
+
+ANTI-COUPLING RULE
+[ ] Shared projects NOT used to bypass module boundaries
+[ ] Cross-module communication uses:
+    - MediatR
+    - explicit contracts
+[ ] No shared mutable entities across modules
+
+STABILITY CHECK (BEFORE ADDING TO SHARED)
+[ ] Used by at least two modules
+[ ] Same meaning across modules
+[ ] No module-specific naming
+[ ] No dependency on module internals
+[ ] Stable over time
+
+CONFIGURATION OF SHARED PROJECTS
+
+JUSTGO.AUTHENTICATION (SHARED INFRA)
+[ ] Contains platform-level infrastructure only
+[ ] OK:
+    - auth/JWT
+    - tenant switching
+    - caching/logging
+    - repositories (generic)
+[ ] NOT OK:
+    - module-specific business rules
+    - domain entities
+    - workflows
+
+JUSTGOAPI.SHARED (SHARED CONTRACTS)
+[ ] Contains lightweight shared contracts/utilities
+[ ] OK:
+    - DTO helpers
+    - mapping base classes
+    - simple shared models
+[ ] NOT OK:
+    - module-specific DTOs
+    - domain entities
+    - infrastructure logic
+
+JUSTGO.RULEENGINE (GENERIC ENGINE)
+[ ] Provides rule evaluation only
+[ ] Does NOT own business rules
+[ ] Module-specific rules stay in modules
+[ ] Infrastructure dependencies hidden behind interfaces
+
+UTILITY CONTROL
+[ ] No generic "Helper" dumping
+[ ] Utilities are:
+    - small
+    - focused
+    - clearly named
+
+COMMON SHARED SMELLS (FLAG STRONGLY)
+[ ] Shared project references a module
+[ ] Module-specific logic placed in shared
+[ ] Shared enum used by only one module
+[ ] Shared DTO used by single endpoint
+[ ] Large generic utility classes
+[ ] RuleEngine contains business policy
+[ ] Shared project contains infrastructure + business mixed
+[ ] Changes in shared required for one module only
+
+GUIDING RULE
+[ ] Host wires modules
+[ ] Shared reduces duplication
+[ ] Modules own business logic

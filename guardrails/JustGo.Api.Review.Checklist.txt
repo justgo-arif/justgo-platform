@@ -1,0 +1,164 @@
+JUSTGO API LAYER + REST REVIEW CHECKLIST
+
+CORE PRINCIPLE
+[ ] API layer is transport-only (HTTP adapter)
+[ ] No business logic or workflow decisions in controllers
+[ ] Controllers remain thin and delegate to Application layer
+
+NO PROGRAM.CS IN MODULE API
+[ ] No Program.cs or host builder inside module API project
+[ ] Composition root exists only in main API project
+[ ] Module exposes service registration via extension methods
+
+SERVICE REGISTRATION
+[ ] Uses pattern: [Module]ServiceRegistration
+[ ] Uses method: Add[Module]Services(IServiceCollection)
+[ ] Registers:
+    - MediatR handlers
+    - Validators (FluentValidation)
+    - Infrastructure implementations
+    - Module services
+    - Mapping profiles (if applicable)
+
+MIDDLEWARE EXTENSIONS
+[ ] Middleware has module-specific naming
+[ ] Uses pattern: Use[Module][MiddlewareName]()
+[ ] Avoids generic/global names
+
+CONTROLLER RESPONSIBILITY
+[ ] Only handles HTTP concerns
+[ ] Does NOT:
+    - execute SQL
+    - call repositories
+    - call Infrastructure directly
+    - perform business validation
+    - build domain objects
+    - run workflows
+    - contain complex mapping
+    - enforce business authorization logic
+[ ] Does:
+    - bind request data
+    - call _mediator.Send(...)
+    - pass CancellationToken
+    - return standardized response
+    - apply routing/auth/versioning attributes
+
+MEDIATR USAGE
+[ ] All use cases go through MediatR
+[ ] Uses: await _mediator.Send(request, cancellationToken)
+[ ] No direct handler/repository/service calls
+
+RESPONSE PATTERN
+[ ] Uses ApiResponse<TData, TError>
+[ ] Uses ICustomError for errors
+[ ] No raw/anonymous responses (string, bool, entity, object)
+
+RESPONSE TYPES
+[ ] No ApiResponse<object, object>
+[ ] Uses concrete DTOs
+[ ] API contract is explicit and strongly typed
+
+ERROR HANDLING
+[ ] Uses standardized error pattern
+[ ] Errors include machine-readable code
+[ ] No internal stack traces exposed
+[ ] No inconsistent/manual error responses
+
+AUTHORIZATION
+[ ] Every endpoint explicitly declares:
+    - [CustomAuthorize]
+    - OR [AllowAnonymous]
+[ ] No accidental public endpoints
+
+VERSIONING & ROUTING
+[ ] Uses API versioning:
+    - [ApiVersion("x.x")]
+    - versioned route (api/v{version})
+[ ] Routes use constraints (e.g., {id:guid})
+[ ] Routes use nouns (not verbs)
+[ ] Resource names are plural
+[ ] URIs follow hierarchical structure
+
+HTTP SEMANTICS
+[ ] Correct HTTP verb used (GET, POST, PUT, PATCH, DELETE)
+[ ] No POST used for read operations
+[ ] HTTP semantics respected (idempotency, safety)
+[ ] Proper status codes used:
+    - 200, 201, 204 (success)
+    - 400, 401, 403, 404, 409, 422 (client errors)
+    - 500 (server errors)
+
+IDEMPOTENCY
+[ ] GET is safe and idempotent
+[ ] PUT and DELETE are idempotent
+[ ] POST supports idempotency key when needed
+
+CANCELLATION TOKEN
+[ ] Controller accepts CancellationToken
+[ ] Passed to MediatR and async dependencies
+
+REQUEST BINDING & VALIDATION
+[ ] Explicit binding used where needed:
+    - [FromRoute], [FromQuery], [FromBody]
+[ ] All inputs validated (body, query, headers)
+[ ] Invalid/malformed requests rejected
+[ ] Unknown fields handled appropriately (if strict mode)
+
+NO DOMAIN ENTITY RESPONSES
+[ ] Controllers do NOT return domain entities
+[ ] Always return DTOs
+
+TRACING / CORRELATION
+[ ] Request includes correlation ID (e.g., X-Correlation-ID)
+[ ] Correlation ID propagated across services
+[ ] Logs include correlation ID
+
+CACHING
+[ ] GET endpoints support caching where applicable
+[ ] Uses Cache-Control / ETag / Last-Modified
+[ ] Supports conditional requests
+
+PERFORMANCE
+[ ] Pagination used for large datasets
+[ ] Avoid over-fetching
+[ ] Compression enabled (gzip/brotli)
+[ ] Async pattern for long-running operations (202 + polling/webhook)
+
+SECURITY (API LEVEL)
+[ ] HTTPS enforced
+[ ] No sensitive data in URLs
+[ ] Inputs sanitized
+[ ] No secrets hardcoded
+[ ] Rate limiting considered
+
+OPENAPI / CONTRACT
+[ ] OpenAPI spec exists and is up-to-date
+[ ] Spec defines requests, responses, and errors
+[ ] No spec drift between implementation and contract
+[ ] Contract-first approach preferred
+[ ] Schemas are strongly typed (no ambiguous types)
+
+OBSERVABILITY
+[ ] Structured logging used
+[ ] Distributed tracing supported
+
+COMMON SMELLS (FLAG STRONGLY)
+[ ] Module API contains Program.cs
+[ ] Controller returns ApiResponse<object, object>
+[ ] Controller returns raw primitives or entities
+[ ] Business logic inside controller
+[ ] Controller calls repository/infrastructure directly
+[ ] Missing authorization attributes
+[ ] Inconsistent response structure
+[ ] CancellationToken missing or not passed
+[ ] Missing API versioning
+[ ] Routes lack constraints
+[ ] Middleware naming too generic
+[ ] Service registration not following convention
+[ ] Controller exposes domain entities
+[ ] Anonymous response objects created
+[ ] POST used for read operations
+
+GUIDING RULE
+[ ] API translates HTTP → Application
+[ ] Business logic belongs to Application/Domain only

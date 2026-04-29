@@ -1,0 +1,94 @@
+JUSTGO DOMAIN LAYER REVIEW CHECKLIST (PRAGMATIC)
+
+CORE PRINCIPLE
+[ ] Domain contains business rules and core logic only
+[ ] No technical or infrastructure concerns
+[ ] Focus on correctness, clarity, and maintainability (not DDD patterns)
+
+DEPENDENCIES
+[ ] Domain has NO dependency on:
+    - Application layer
+    - Infrastructure layer
+    - API layer
+    - external SDKs/libraries
+[ ] Allowed:
+    - .NET base libraries
+    - minimal SharedKernel abstractions (if needed)
+[ ] No dependency on ORM, HTTP, or frameworks
+
+BUSINESS LOGIC PLACEMENT
+[ ] Core business rules are inside Domain
+[ ] No business rules in controllers, repositories, or handlers
+[ ] Logic is centralized and not duplicated across layers
+
+DOMAIN MODELS
+[ ] Models represent business concepts clearly
+[ ] Avoid pure data-only classes when behavior exists
+[ ] Keep logic close to the data it operates on
+[ ] Do not over-engineer with unnecessary patterns
+
+STATE MANAGEMENT
+[ ] State changes happen through controlled methods (not random setters)
+[ ] Critical fields are protected from uncontrolled modification
+[ ] Objects maintain valid state after any operation
+
+VALIDATION (BUSINESS LEVEL)
+[ ] Business rules enforced inside Domain (not only via validators)
+[ ] Constructors/methods prevent invalid state
+[ ] No reliance on external validation frameworks
+
+NO INFRASTRUCTURE LEAKAGE
+[ ] No references to:
+    - database/ORM (EF, Dapper)
+    - HttpContext / web concepts
+    - configuration
+    - logging frameworks
+    - file systems, email, cache, external APIs
+[ ] No async external calls inside Domain
+
+PERSISTENCE IGNORANCE
+[ ] Domain does NOT know how data is stored
+[ ] No table/schema knowledge
+[ ] No persistence-specific attributes unless unavoidable
+
+NO APPLICATION LOGIC
+[ ] No command/query handlers
+[ ] No DTOs for API/Application
+[ ] No workflow/orchestration logic
+[ ] No mapping logic
+
+ERROR HANDLING
+[ ] Errors expressed in business terms
+[ ] No technical exception leakage
+[ ] Avoid generic Exception where meaningful errors exist
+
+DATA TYPES & STRUCTURE
+[ ] Prefer strong types over primitives where meaningful
+[ ] Avoid magic strings for business values
+[ ] Keep models simple and readable
+
+IMMUTABILITY & SAFETY (WHERE PRACTICAL)
+[ ] Avoid unnecessary public setters
+[ ] Collections not exposed for uncontrolled modification
+[ ] Prevent invalid mutation from outside
+
+TESTABILITY
+[ ] Domain logic is easily unit testable
+[ ] No dependency mocking required for domain tests
+[ ] Pure logic where possible
+
+COMMON SMELLS (FLAG STRONGLY)
+[ ] Domain referencing Infrastructure/API
+[ ] Business logic placed in Application instead
+[ ] Data-only models with logic scattered elsewhere
+[ ] Excessive public setters
+[ ] DTOs inside Domain
+[ ] ORM-specific code tightly coupled
+[ ] Static/global mutable state
+[ ] Magic strings for business rules
+[ ] Domain doing external calls
+
+GUIDING RULE
+[ ] Domain defines business rules and invariants
+[ ] Application coordinates use cases
+[ ] Infrastructure handles technical implementation
